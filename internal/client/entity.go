@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
-	"strings"
+	"net/http"
 
 	"github.com/asachs01/autotask-go/pkg/autotask"
 )
@@ -14,10 +14,10 @@ type EntityService struct {
 	entityName string
 }
 
-// Get retrieves an entity by ID
+// Get gets an entity by ID
 func (s *EntityService) Get(ctx context.Context, id int64) (interface{}, error) {
 	path := fmt.Sprintf("/%s/%d", s.entityName, id)
-	req, err := s.client.newRequest(ctx, "GET", path, nil)
+	req, err := s.client.newRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -30,10 +30,10 @@ func (s *EntityService) Get(ctx context.Context, id int64) (interface{}, error) 
 	return result, nil
 }
 
-// Query retrieves entities matching the filter
+// Query queries entities with a filter
 func (s *EntityService) Query(ctx context.Context, filter string, result interface{}) error {
-	path := fmt.Sprintf("/%s/query", s.entityName)
-	req, err := s.client.newRequest(ctx, "POST", path, strings.NewReader(filter))
+	path := "/" + s.entityName + "/query"
+	req, err := s.client.newRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
@@ -43,8 +43,8 @@ func (s *EntityService) Query(ctx context.Context, filter string, result interfa
 
 // Create creates a new entity
 func (s *EntityService) Create(ctx context.Context, entity interface{}) (interface{}, error) {
-	path := fmt.Sprintf("/%s", s.entityName)
-	req, err := s.client.newRequest(ctx, "POST", path, entity)
+	path := "/" + s.entityName
+	req, err := s.client.newRequest(ctx, http.MethodPost, path, entity)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (s *EntityService) Create(ctx context.Context, entity interface{}) (interfa
 // Update updates an existing entity
 func (s *EntityService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) {
 	path := fmt.Sprintf("/%s/%d", s.entityName, id)
-	req, err := s.client.newRequest(ctx, "PUT", path, entity)
+	req, err := s.client.newRequest(ctx, http.MethodPatch, path, entity)
 	if err != nil {
 		return nil, err
 	}
@@ -73,10 +73,10 @@ func (s *EntityService) Update(ctx context.Context, id int64, entity interface{}
 	return result, nil
 }
 
-// Delete deletes an entity
+// Delete deletes an entity by ID
 func (s *EntityService) Delete(ctx context.Context, id int64) error {
 	path := fmt.Sprintf("/%s/%d", s.entityName, id)
-	req, err := s.client.newRequest(ctx, "DELETE", path, nil)
+	req, err := s.client.newRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
 		return err
 	}
@@ -84,22 +84,22 @@ func (s *EntityService) Delete(ctx context.Context, id int64) error {
 	return s.client.do(req, nil)
 }
 
-// Count returns the number of entities matching the filter
+// Count counts entities matching a filter
 func (s *EntityService) Count(ctx context.Context, filter string) (int, error) {
-	path := fmt.Sprintf("/%s/count", s.entityName)
-	req, err := s.client.newRequest(ctx, "POST", path, strings.NewReader(filter))
+	path := "/" + s.entityName + "/count"
+	req, err := s.client.newRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return 0, err
 	}
 
-	var result struct {
+	var count struct {
 		Count int `json:"count"`
 	}
-	if err := s.client.do(req, &result); err != nil {
+	if err := s.client.do(req, &count); err != nil {
 		return 0, err
 	}
 
-	return result.Count, nil
+	return count.Count, nil
 }
 
 // Pagination handles paginated results
@@ -114,8 +114,8 @@ func (s *EntityService) Pagination(ctx context.Context, url string, result inter
 
 // BatchCreate creates multiple entities in a single request
 func (s *EntityService) BatchCreate(ctx context.Context, entities []interface{}, result interface{}) error {
-	path := fmt.Sprintf("/%s/batch", s.entityName)
-	req, err := s.client.newRequest(ctx, "POST", path, entities)
+	path := "/" + s.entityName + "/batch"
+	req, err := s.client.newRequest(ctx, http.MethodPost, path, entities)
 	if err != nil {
 		return err
 	}
@@ -125,8 +125,8 @@ func (s *EntityService) BatchCreate(ctx context.Context, entities []interface{},
 
 // BatchUpdate updates multiple entities in a single request
 func (s *EntityService) BatchUpdate(ctx context.Context, entities []interface{}, result interface{}) error {
-	path := fmt.Sprintf("/%s/batch", s.entityName)
-	req, err := s.client.newRequest(ctx, "PUT", path, entities)
+	path := "/" + s.entityName + "/batch"
+	req, err := s.client.newRequest(ctx, http.MethodPatch, path, entities)
 	if err != nil {
 		return err
 	}
@@ -136,8 +136,8 @@ func (s *EntityService) BatchUpdate(ctx context.Context, entities []interface{},
 
 // BatchDelete deletes multiple entities in a single request
 func (s *EntityService) BatchDelete(ctx context.Context, ids []int64) error {
-	path := fmt.Sprintf("/%s/batch", s.entityName)
-	req, err := s.client.newRequest(ctx, "DELETE", path, ids)
+	path := "/" + s.entityName + "/batch"
+	req, err := s.client.newRequest(ctx, http.MethodDelete, path, ids)
 	if err != nil {
 		return err
 	}

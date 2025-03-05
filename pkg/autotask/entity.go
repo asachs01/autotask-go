@@ -94,7 +94,7 @@ func (s *BaseEntityService) Query(ctx context.Context, filter string, result int
 	params := NewEntityQueryParams(filterObj).WithMaxRecords(500)
 
 	// Use the correct endpoint structure according to the API docs
-	url := fmt.Sprintf("%s/query", s.EntityName)
+	url := s.EntityName + "/query"
 
 	// Convert params to JSON string for URL parameter
 	searchJSON, err := json.Marshal(params)
@@ -127,7 +127,7 @@ func (s *BaseEntityService) Query(ctx context.Context, filter string, result int
 
 // Create creates a new entity.
 func (s *BaseEntityService) Create(ctx context.Context, entity interface{}) (interface{}, error) {
-	url := fmt.Sprintf("%s", s.EntityName)
+	url := s.EntityName
 	req, err := s.Client.NewRequest(ctx, http.MethodPost, url, entity)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func (s *BaseEntityService) Count(ctx context.Context, filter string) (int, erro
 	params := NewEntityQueryParams(filterObj)
 
 	// Use the correct endpoint structure according to the API docs
-	url := fmt.Sprintf("%s/query/count", s.EntityName)
+	url := s.EntityName + "/query/count"
 
 	// Convert params to JSON string for URL parameter
 	searchJSON, err := json.Marshal(params)
@@ -232,7 +232,7 @@ func (s *BaseEntityService) Pagination(ctx context.Context, url string, result i
 
 // BatchCreate creates multiple entities in a single request.
 func (s *BaseEntityService) BatchCreate(ctx context.Context, entities []interface{}, result interface{}) error {
-	url := fmt.Sprintf("%s/batch", s.EntityName)
+	url := s.EntityName + "/batch"
 	req, err := s.Client.NewRequest(ctx, http.MethodPost, url, entities)
 	if err != nil {
 		return err
@@ -244,7 +244,7 @@ func (s *BaseEntityService) BatchCreate(ctx context.Context, entities []interfac
 
 // BatchUpdate updates multiple entities in a single request.
 func (s *BaseEntityService) BatchUpdate(ctx context.Context, entities []interface{}, result interface{}) error {
-	url := fmt.Sprintf("%s/batch", s.EntityName)
+	url := s.EntityName + "/batch"
 	req, err := s.Client.NewRequest(ctx, http.MethodPatch, url, entities)
 	if err != nil {
 		return err
@@ -256,7 +256,7 @@ func (s *BaseEntityService) BatchUpdate(ctx context.Context, entities []interfac
 
 // BatchDelete deletes multiple entities in a single request.
 func (s *BaseEntityService) BatchDelete(ctx context.Context, ids []int64) error {
-	url := fmt.Sprintf("%s/batch", s.EntityName)
+	url := s.EntityName + "/batch"
 	req, err := s.Client.NewRequest(ctx, http.MethodDelete, url, ids)
 	if err != nil {
 		return err
