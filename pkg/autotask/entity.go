@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
+	"time"
 )
 
 // Response represents a generic response from the Autotask API.
@@ -53,45 +52,38 @@ func (s *BaseEntityService) Get(ctx context.Context, id int64) (interface{}, err
 
 // Query queries entities with a filter.
 func (s *BaseEntityService) Query(ctx context.Context, filter string, result interface{}) error {
-	// Create a filter object based on the filter string
-	var filterObj QueryFilter
+	// Parse the filter string into a query filter or filter group
+	var queryFilter interface{}
+
 	if filter != "" {
-		// Parse the filter string to extract field and value
-		parts := strings.Split(filter, "=")
-		if len(parts) == 2 {
-			field := strings.TrimSpace(parts[0])
-			value := strings.TrimSpace(parts[1])
-			if value == "true" {
-				filterObj = NewQueryFilter(field, OperatorEquals, true)
-			} else if value == "false" {
-				filterObj = NewQueryFilter(field, OperatorEquals, false)
-			} else if strings.HasPrefix(value, "<") {
-				// Handle less than
-				num, _ := strconv.Atoi(strings.TrimPrefix(value, "<"))
-				filterObj = NewQueryFilter(field, OperatorLessThan, num)
-			} else if strings.HasPrefix(value, ">") {
-				// Handle greater than
-				num, _ := strconv.Atoi(strings.TrimPrefix(value, ">"))
-				filterObj = NewQueryFilter(field, OperatorGreaterThan, num)
-			} else {
-				// Default to equals
-				filterObj = NewQueryFilter(field, OperatorEquals, value)
-			}
-		}
+		// Use the new ParseFilterString function to handle complex filters
+		queryFilter = ParseFilterString(filter)
 	} else {
 		// Default filter for active items
 		switch s.EntityName {
 		case "Companies":
-			filterObj = NewQueryFilter("IsActive", OperatorEquals, true)
+			queryFilter = NewQueryFilter("IsActive", OperatorEquals, true)
 		case "Tickets":
-			filterObj = NewQueryFilter("Status", OperatorNotEquals, 5) // 5 is typically "Completed"
+			queryFilter = NewQueryFilter("Status", OperatorNotEquals, 5) // 5 is typically "Completed"
 		case "Resources":
-			filterObj = NewQueryFilter("IsActive", OperatorEquals, true)
+			queryFilter = NewQueryFilter("IsActive", OperatorEquals, true)
+		case "Projects":
+			queryFilter = NewQueryFilter("Status", OperatorNotEquals, 5) // 5 is typically "Completed"
+		case "Tasks":
+			queryFilter = NewQueryFilter("Status", OperatorNotEquals, 5) // 5 is typically "Completed"
+		case "TimeEntries":
+			// Default to entries from the last 30 days
+			thirtyDaysAgo := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
+			queryFilter = NewQueryFilter("DateWorked", OperatorGreaterOrEqual, thirtyDaysAgo)
+		case "Contracts":
+			queryFilter = NewQueryFilter("Status", OperatorEquals, 1) // 1 is typically "Active"
+		case "ConfigurationItems":
+			queryFilter = NewQueryFilter("Active", OperatorEquals, true)
 		}
 	}
 
-	// Create query parameters using the existing type
-	params := NewEntityQueryParams(filterObj).WithMaxRecords(500)
+	// Create query parameters using the enhanced type
+	params := NewEntityQueryParams(queryFilter).WithMaxRecords(500)
 
 	// Use the correct endpoint structure according to the API docs
 	url := s.EntityName + "/query"

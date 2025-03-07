@@ -48,6 +48,17 @@ err = client.Tickets().Query(ctx, "Status!=5", &ticketResponse)
 if err != nil {
 	log.Fatal(err)
 }
+
+// Query with complex filters
+var highPriorityTickets struct {
+	Items       []autotask.Ticket    `json:"items"`
+	PageDetails autotask.PageDetails `json:"pageDetails"`
+}
+// Find active tickets that are either high priority or assigned to a specific resource
+err = client.Tickets().Query(ctx, "Status!=5 AND (Priority=1 OR AssignedResourceID=123)", &highPriorityTickets)
+if err != nil {
+	log.Fatal(err)
+}
 ```
 
 ## Features
@@ -58,6 +69,7 @@ if err != nil {
 - Pagination support
 - Configurable logging
 - Context support for timeouts and cancellation
+- Advanced query filtering with logical operators (AND, OR) and nested conditions
 
 ## Supported Entities
 
@@ -66,6 +78,11 @@ if err != nil {
 - Contacts
 - Resources
 - Webhooks
+- Projects
+- Tasks
+- Time Entries
+- Contracts
+- Configuration Items
 
 ## Authentication
 
