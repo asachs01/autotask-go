@@ -303,7 +303,7 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		return resp, nil
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, c.handleErrorResponse(resp)
 	}
 

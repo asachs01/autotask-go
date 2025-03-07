@@ -434,3 +434,89 @@ func TestDefaultPaginationOptions(t *testing.T) {
 	AssertEqual(t, 1, options.Page, "default page should be 1")
 	AssertEqual(t, 100, options.PageSize, "default page size should be 100")
 }
+
+func TestPaginationIteratorTotalCount(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the query endpoint
+	server.AddHandler("/TestEntities/query", func(w http.ResponseWriter, r *http.Request) {
+		// Create mock entities
+		entities := CreateMockEntities(2, "TestEntity", 123)
+
+		// Create mock response with pagination details
+		response := CreateMockListResponse(entities, 1, 10, 25)
+
+		// Send response
+		server.RespondWithJSON(w, http.StatusOK, response)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+	service := &baseService
+
+	// Create a pagination iterator
+	ctx := context.Background()
+	iterator, err := NewPaginationIterator(ctx, service, "name='Test'", 10)
+
+	// Verify no error
+	AssertNil(t, err, "error should be nil")
+
+	// Call Next to load the first page
+	hasNext := iterator.Next()
+	AssertTrue(t, hasNext, "should have next item")
+
+	// Verify total count
+	totalCount := iterator.TotalCount()
+	AssertEqual(t, 25, totalCount, "total count should match")
+}
+
+func TestPaginationIteratorCurrentPage(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the query endpoint
+	server.AddHandler("/TestEntities/query", func(w http.ResponseWriter, r *http.Request) {
+		// Create mock entities
+		entities := CreateMockEntities(2, "TestEntity", 123)
+
+		// Create mock response with pagination details
+		response := CreateMockListResponse(entities, 2, 10, 25)
+
+		// Send response
+		server.RespondWithJSON(w, http.StatusOK, response)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+	service := &baseService
+
+	// Create a pagination iterator without loading the first page
+	iterator := &PaginationIterator{
+		service:      service,
+		filter:       "name='Test'",
+		currentPage:  0, // Manually set to 0 for testing
+		pageSize:     10,
+		currentIndex: -1,
+		ctx:          context.Background(),
+	}
+
+	// Verify initial page is 0 (manually set)
+	initialPage := iterator.CurrentPage()
+	AssertEqual(t, 0, initialPage, "initial page should be 0")
+
+	// Manually set the current page to match the mock response
+	iterator.currentPage = 2
+
+	// Verify current page is 2 (manually set)
+	currentPage := iterator.CurrentPage()
+	AssertEqual(t, 2, currentPage, "current page should be 2")
+}

@@ -3,6 +3,7 @@ package autotask
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 )
@@ -348,4 +349,321 @@ func TestEntityCount(t *testing.T) {
 
 	// Verify count
 	AssertEqual(t, 42, count, "count should match")
+}
+
+func TestBatchCreate(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the batch create endpoint
+	server.AddHandler("/TestEntities/batch", func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method
+		AssertEqual(t, http.MethodPost, r.Method, "method should match")
+
+		// Read request body
+		body, err := io.ReadAll(r.Body)
+		AssertNil(t, err, "error reading request body should be nil")
+
+		var entities []interface{}
+		err = json.Unmarshal(body, &entities)
+		AssertNil(t, err, "error unmarshaling request body should be nil")
+		AssertEqual(t, 2, len(entities), "should have 2 entities")
+
+		// Create response entities with IDs
+		responseEntities := []map[string]interface{}{
+			{
+				"id":   float64(1001),
+				"name": "Entity 1",
+			},
+			{
+				"id":   float64(1002),
+				"name": "Entity 2",
+			},
+		}
+
+		// Create response
+		response := map[string]interface{}{
+			"items": responseEntities,
+		}
+
+		// Send response
+		server.RespondWithJSON(w, http.StatusOK, response)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+
+	// Create entities to batch create
+	entities := []interface{}{
+		map[string]interface{}{"name": "Entity 1"},
+		map[string]interface{}{"name": "Entity 2"},
+	}
+
+	// Create a result variable
+	var result map[string]interface{}
+
+	// Call BatchCreate
+	ctx := context.Background()
+	err := baseService.BatchCreate(ctx, entities, &result)
+
+	// Verify no error
+	AssertNil(t, err, "error should be nil")
+
+	// Verify result
+	AssertNotNil(t, result, "result should not be nil")
+	items, ok := result["items"].([]interface{})
+	AssertTrue(t, ok, "result should have items")
+	AssertEqual(t, 2, len(items), "should have 2 items")
+}
+
+func TestBatchUpdate(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the batch update endpoint
+	server.AddHandler("/TestEntities/batch", func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method
+		AssertEqual(t, http.MethodPatch, r.Method, "method should match")
+
+		// Read request body
+		body, err := io.ReadAll(r.Body)
+		AssertNil(t, err, "error reading request body should be nil")
+
+		var entities []interface{}
+		err = json.Unmarshal(body, &entities)
+		AssertNil(t, err, "error unmarshaling request body should be nil")
+		AssertEqual(t, 2, len(entities), "should have 2 entities")
+
+		// Create response entities with updated values
+		responseEntities := []map[string]interface{}{
+			{
+				"id":      float64(1001),
+				"name":    "Updated Entity 1",
+				"updated": true,
+			},
+			{
+				"id":      float64(1002),
+				"name":    "Updated Entity 2",
+				"updated": true,
+			},
+		}
+
+		// Create response
+		response := map[string]interface{}{
+			"items": responseEntities,
+		}
+
+		// Send response
+		server.RespondWithJSON(w, http.StatusOK, response)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+
+	// Create entities to batch update
+	entities := []interface{}{
+		map[string]interface{}{"id": float64(1001), "name": "Updated Entity 1"},
+		map[string]interface{}{"id": float64(1002), "name": "Updated Entity 2"},
+	}
+
+	// Create a result variable
+	var result map[string]interface{}
+
+	// Call BatchUpdate
+	ctx := context.Background()
+	err := baseService.BatchUpdate(ctx, entities, &result)
+
+	// Verify no error
+	AssertNil(t, err, "error should be nil")
+
+	// Verify result
+	AssertNotNil(t, result, "result should not be nil")
+	items, ok := result["items"].([]interface{})
+	AssertTrue(t, ok, "result should have items")
+	AssertEqual(t, 2, len(items), "should have 2 items")
+}
+
+func TestBatchDelete(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the batch delete endpoint
+	server.AddHandler("/TestEntities/batch", func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method
+		AssertEqual(t, http.MethodDelete, r.Method, "method should match")
+
+		// Read request body
+		var ids []int64
+		err := json.NewDecoder(r.Body).Decode(&ids)
+		AssertNil(t, err, "error decoding request body should be nil")
+		AssertLen(t, ids, 2, "should have 2 ids")
+		AssertEqual(t, int64(1001), ids[0], "first id should match")
+		AssertEqual(t, int64(1002), ids[1], "second id should match")
+
+		// Send response
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+
+	// Create ids to batch delete
+	ids := []int64{1001, 1002}
+
+	// Call BatchDelete
+	ctx := context.Background()
+	err := baseService.BatchDelete(ctx, ids)
+
+	// Verify no error
+	AssertNil(t, err, "error should be nil")
+}
+
+func TestGetNextPage(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the next page URL
+	nextPageUrl := "/TestEntities/query/next-page"
+	server.AddHandler(nextPageUrl, func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method
+		AssertEqual(t, http.MethodGet, r.Method, "method should match")
+
+		// Create mock entities
+		entities := CreateMockEntities(2, "TestEntity", 201)
+
+		// Create mock response with pagination details
+		response := CreateMockListResponse(entities, 2, 10, 25)
+
+		// Send response
+		server.RespondWithJSON(w, http.StatusOK, response)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+
+	// Create page details with next page URL
+	pageDetails := PageDetails{
+		PageNumber:  1,
+		PageSize:    10,
+		Count:       25,
+		NextPageUrl: nextPageUrl,
+	}
+
+	// Call GetNextPage
+	ctx := context.Background()
+	items, err := baseService.GetNextPage(ctx, pageDetails)
+
+	// Verify no error
+	AssertNil(t, err, "error should be nil")
+
+	// Verify items
+	AssertNotNil(t, items, "items should not be nil")
+	AssertLen(t, items, 2, "should have 2 items")
+}
+
+func TestGetPreviousPage(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Add a handler for the previous page URL
+	prevPageUrl := "/TestEntities/query/prev-page"
+	server.AddHandler(prevPageUrl, func(w http.ResponseWriter, r *http.Request) {
+		// Verify request method
+		AssertEqual(t, http.MethodGet, r.Method, "method should match")
+
+		// Create mock entities
+		entities := CreateMockEntities(2, "TestEntity", 101)
+
+		// Create mock response with pagination details
+		response := CreateMockListResponse(entities, 1, 10, 25)
+
+		// Send response
+		server.RespondWithJSON(w, http.StatusOK, response)
+	})
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+
+	// Create page details with previous page URL
+	pageDetails := PageDetails{
+		PageNumber:  2,
+		PageSize:    10,
+		Count:       25,
+		PrevPageUrl: prevPageUrl,
+	}
+
+	// Call GetPreviousPage
+	ctx := context.Background()
+	items, err := baseService.GetPreviousPage(ctx, pageDetails)
+
+	// Verify no error
+	AssertNil(t, err, "error should be nil")
+
+	// Verify items
+	AssertNotNil(t, items, "items should not be nil")
+	AssertLen(t, items, 2, "should have 2 items")
+}
+
+func TestGetPreviousPageNoUrl(t *testing.T) {
+	// Create a mock server
+	server := NewMockServer(t)
+	defer server.Close()
+
+	// Create a client
+	client := server.NewTestClient()
+
+	// Create a base entity service
+	baseService := NewBaseEntityService(client, "TestEntities")
+
+	// Create page details with no previous page URL
+	pageDetails := PageDetails{
+		PageNumber:  1,
+		PageSize:    10,
+		Count:       25,
+		PrevPageUrl: "",
+	}
+
+	// Call GetPreviousPage
+	ctx := context.Background()
+	var items []interface{}
+	var err error
+
+	// We need to use a function to capture the return values
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				t.Logf("Recovered from panic: %v", r)
+			}
+		}()
+		items, err = baseService.GetPreviousPage(ctx, pageDetails)
+	}()
+
+	// Verify error
+	AssertNotNil(t, err, "error should not be nil")
+	AssertContains(t, err.Error(), "no previous page available", "error message should indicate no previous page")
+
+	// Verify items is nil
+	if items != nil {
+		t.Errorf("items should be nil, got %v", items)
+	}
 }

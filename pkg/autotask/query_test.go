@@ -180,9 +180,119 @@ func TestEntityQueryParamsWithMethods(t *testing.T) {
 	AssertEqual(t, 1, len(params.Filter), "filter should have 1 item")
 
 	// Verify filter is the same as the one we created
-	filterMap, ok := params.Filter[0].(map[string]interface{})
-	AssertTrue(t, ok, "filter should be a map")
-	AssertEqual(t, "Status", filterMap["field"], "filter field should match")
-	AssertEqual(t, "eq", filterMap["op"], "filter operator should match")
-	AssertEqual(t, float64(1), filterMap["value"], "filter value should match")
+	qf, ok := params.Filter[0].(QueryFilter)
+	AssertTrue(t, ok, "filter should be a QueryFilter")
+	AssertEqual(t, "Status", qf.Field, "filter field should match")
+	AssertEqual(t, OperatorEquals, qf.Operator, "filter operator should match")
+	AssertEqual(t, 1, qf.Value, "filter value should match")
+}
+
+func TestParseSimpleFilter(t *testing.T) {
+	// Test not equals operator
+	filter := parseSimpleFilter("name != 'Test'")
+	AssertEqual(t, "name", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("noteq"), filter.Operator, "operator should match")
+	AssertEqual(t, "'Test'", filter.Value, "value should match")
+
+	// Test contains operator
+	filter = parseSimpleFilter("name contains 'test'")
+	AssertEqual(t, "name", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("contains"), filter.Operator, "operator should match")
+	AssertEqual(t, "test", filter.Value, "value should match")
+
+	// Test greater than operator
+	filter = parseSimpleFilter("count > 10")
+	AssertEqual(t, "count", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("greaterThan"), filter.Operator, "operator should match")
+	AssertEqual(t, "10", filter.Value, "value should match")
+
+	// Test less than operator
+	filter = parseSimpleFilter("count < 10")
+	AssertEqual(t, "count", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("lessThan"), filter.Operator, "operator should match")
+	AssertEqual(t, "10", filter.Value, "value should match")
+
+	// Test equals operator (default)
+	filter = parseSimpleFilter("name = 'Test'")
+	AssertEqual(t, "name", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("eq"), filter.Operator, "operator should match")
+	AssertEqual(t, "'Test'", filter.Value, "value should match")
+
+	// Test invalid filter
+	filter = parseSimpleFilter("invalid filter")
+	AssertEqual(t, "", filter.Field, "field should be empty")
+	AssertEqual(t, QueryOperator(""), filter.Operator, "operator should be empty")
+	AssertNil(t, filter.Value, "value should be nil")
+}
+
+func TestParseValueWithOperator(t *testing.T) {
+	// Test boolean true
+	filter := parseValueWithOperator("active", OperatorEquals, "true")
+	AssertEqual(t, "active", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("eq"), filter.Operator, "operator should match")
+	AssertEqual(t, true, filter.Value, "value should be true")
+
+	// Test boolean false
+	filter = parseValueWithOperator("active", OperatorEquals, "false")
+	AssertEqual(t, "active", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("eq"), filter.Operator, "operator should match")
+	AssertEqual(t, false, filter.Value, "value should be false")
+
+	// Test string with quotes
+	filter = parseValueWithOperator("name", OperatorEquals, "'Test'")
+	AssertEqual(t, "name", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("eq"), filter.Operator, "operator should match")
+	AssertEqual(t, "'Test'", filter.Value, "value should match")
+
+	// Test string with double quotes
+	filter = parseValueWithOperator("name", OperatorEquals, "\"Test\"")
+	AssertEqual(t, "name", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("eq"), filter.Operator, "operator should match")
+	AssertEqual(t, "\"Test\"", filter.Value, "value should match")
+
+	// Test string without quotes
+	filter = parseValueWithOperator("name", OperatorEquals, "Test")
+	AssertEqual(t, "name", filter.Field, "field should match")
+	AssertEqual(t, QueryOperator("eq"), filter.Operator, "operator should match")
+	AssertEqual(t, "Test", filter.Value, "value should match")
+}
+
+func TestParseInt(t *testing.T) {
+	// Test valid integer
+	result := parseInt("123")
+	AssertEqual(t, int64(123), result, "result should be 123")
+
+	// Test negative integer
+	result = parseInt("-123")
+	AssertEqual(t, int64(-123), result, "result should be -123")
+
+	// Test zero
+	result = parseInt("0")
+	AssertEqual(t, int64(0), result, "result should be 0")
+
+	// Test invalid integer (should return 0)
+	result = parseInt("not a number")
+	AssertEqual(t, int64(0), result, "result should be 0 for invalid input")
+}
+
+func TestParseFloat(t *testing.T) {
+	// Test valid float
+	result := parseFloat("123.45")
+	AssertEqual(t, float64(123.45), result, "result should be 123.45")
+
+	// Test negative float
+	result = parseFloat("-123.45")
+	AssertEqual(t, float64(-123.45), result, "result should be -123.45")
+
+	// Test integer as float
+	result = parseFloat("123")
+	AssertEqual(t, float64(123), result, "result should be 123.0")
+
+	// Test zero
+	result = parseFloat("0")
+	AssertEqual(t, float64(0), result, "result should be 0.0")
+
+	// Test invalid float (should return 0)
+	result = parseFloat("not a number")
+	AssertEqual(t, float64(0), result, "result should be 0.0 for invalid input")
 }

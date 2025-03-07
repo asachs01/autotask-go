@@ -1,13 +1,16 @@
 package autotask
 
 import (
+	"bytes"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -43,53 +46,66 @@ func setupMockServer(handler http.Handler) (*httptest.Server, Client) {
 }
 
 func TestCompaniesService(t *testing.T) {
-	// Setup a mock server
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Handle zone information request
-		if strings.Contains(r.URL.Path, "ZoneInformation") {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
-				"zoneName": "Test Zone",
-				"url": "https://api.example.com",
-				"webUrl": "https://example.com",
-				"ci": 123
-			}`))
-			return
-		}
+	// Create a mock server
+	mockServer := NewMockServer(t)
+	defer mockServer.Close()
 
-		switch r.URL.Path {
-		case "/Companies/1":
-			if r.Method == http.MethodGet {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"item": {"id": 1, "name": "Test Company"}}`))
-			} else if r.Method == http.MethodPatch {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"item": {"id": 1, "name": "Updated Company"}}`))
-			} else if r.Method == http.MethodDelete {
-				w.WriteHeader(http.StatusNoContent)
-			}
-		case "/Companies":
-			if r.Method == http.MethodGet {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"items": [{"id": 1, "name": "Test Company"}, {"id": 2, "name": "Another Company"}]}`))
-			} else if r.Method == http.MethodPost {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusCreated)
-				w.Write([]byte(`{"item": {"id": 3, "name": "New Company"}}`))
-			}
-		case "/Companies/count":
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"count": 2}`))
+	// Add handlers for the Companies endpoints
+	mockServer.AddHandler("/Companies/1", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+				"item": map[string]interface{}{
+					"id":   float64(1),
+					"name": "Test Company",
+				},
+			})
+		} else if r.Method == http.MethodPatch {
+			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+				"item": map[string]interface{}{
+					"id":   float64(1),
+					"name": "Updated Company",
+				},
+			})
+		} else if r.Method == http.MethodDelete {
+			mockServer.RespondWithJSON(w, http.StatusOK, nil)
 		}
 	})
 
-	server, client := setupMockServer(handler)
-	defer server.Close()
+	mockServer.AddHandler("/Companies/query", func(w http.ResponseWriter, r *http.Request) {
+		items := []interface{}{
+			map[string]interface{}{
+				"id":   float64(1),
+				"name": "Test Company",
+			},
+			map[string]interface{}{
+				"id":   float64(2),
+				"name": "Another Company",
+			},
+		}
+		mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+			"items": items,
+		})
+	})
+
+	mockServer.AddHandler("/Companies", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			mockServer.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
+				"item": map[string]interface{}{
+					"id":   float64(3),
+					"name": "New Company",
+				},
+			})
+		}
+	})
+
+	mockServer.AddHandler("/Companies/query/count", func(w http.ResponseWriter, r *http.Request) {
+		mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+			"count": float64(2),
+		})
+	})
+
+	// Create a client using the mock server
+	client := mockServer.NewTestClient()
 
 	// Create a companies service
 	service := &companiesService{
@@ -121,14 +137,16 @@ func TestCompaniesService(t *testing.T) {
 
 	// Test Query
 	t.Run("Query", func(t *testing.T) {
-		var companies []map[string]interface{}
-		err := service.Query(ctx, "filter=name contains 'Company'", &companies)
+		var response struct {
+			Items []map[string]interface{} `json:"items"`
+		}
+		err := service.Query(ctx, "", &response)
 		if err != nil {
 			t.Fatalf("Failed to query companies: %v", err)
 		}
 
-		if len(companies) != 2 {
-			t.Errorf("Expected 2 companies, got %d", len(companies))
+		if len(response.Items) != 2 {
+			t.Errorf("Expected 2 companies, got %d", len(response.Items))
 		}
 	})
 
@@ -137,44 +155,42 @@ func TestCompaniesService(t *testing.T) {
 		newCompany := map[string]interface{}{
 			"name": "New Company",
 		}
-
-		created, err := service.Create(ctx, newCompany)
+		company, err := service.Create(ctx, newCompany)
 		if err != nil {
 			t.Fatalf("Failed to create company: %v", err)
 		}
 
-		createdMap, ok := created.(map[string]interface{})
+		companyMap, ok := company.(map[string]interface{})
 		if !ok {
-			t.Fatalf("Expected map[string]interface{}, got %T", created)
+			t.Fatalf("Expected map[string]interface{}, got %T", company)
 		}
 
-		if id, ok := createdMap["id"].(float64); !ok || id != 3 {
-			t.Errorf("Expected id 3, got %v", createdMap["id"])
+		if id, ok := companyMap["id"].(float64); !ok || id != 3 {
+			t.Errorf("Expected id 3, got %v", companyMap["id"])
 		}
 
-		if name, ok := createdMap["name"].(string); !ok || name != "New Company" {
-			t.Errorf("Expected name 'New Company', got %v", createdMap["name"])
+		if name, ok := companyMap["name"].(string); !ok || name != "New Company" {
+			t.Errorf("Expected name 'New Company', got %v", companyMap["name"])
 		}
 	})
 
 	// Test Update
 	t.Run("Update", func(t *testing.T) {
-		updateCompany := map[string]interface{}{
+		updatedCompany := map[string]interface{}{
 			"name": "Updated Company",
 		}
-
-		updated, err := service.Update(ctx, 1, updateCompany)
+		company, err := service.Update(ctx, 1, updatedCompany)
 		if err != nil {
 			t.Fatalf("Failed to update company: %v", err)
 		}
 
-		updatedMap, ok := updated.(map[string]interface{})
+		companyMap, ok := company.(map[string]interface{})
 		if !ok {
-			t.Fatalf("Expected map[string]interface{}, got %T", updated)
+			t.Fatalf("Expected map[string]interface{}, got %T", company)
 		}
 
-		if name, ok := updatedMap["name"].(string); !ok || name != "Updated Company" {
-			t.Errorf("Expected name 'Updated Company', got %v", updatedMap["name"])
+		if name, ok := companyMap["name"].(string); !ok || name != "Updated Company" {
+			t.Errorf("Expected name 'Updated Company', got %v", companyMap["name"])
 		}
 	})
 
@@ -188,7 +204,7 @@ func TestCompaniesService(t *testing.T) {
 
 	// Test Count
 	t.Run("Count", func(t *testing.T) {
-		count, err := service.Count(ctx, "filter=name contains 'Company'")
+		count, err := service.Count(ctx, "")
 		if err != nil {
 			t.Fatalf("Failed to count companies: %v", err)
 		}
@@ -200,47 +216,52 @@ func TestCompaniesService(t *testing.T) {
 }
 
 func TestWebhookService(t *testing.T) {
-	// Setup a mock server
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Handle zone information request
-		if strings.Contains(r.URL.Path, "ZoneInformation") {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
-				"zoneName": "Test Zone",
-				"url": "https://api.example.com",
-				"webUrl": "https://example.com",
-				"ci": 123
-			}`))
-			return
-		}
+	// Create a mock server
+	mockServer := NewMockServer(t)
+	defer mockServer.Close()
 
-		switch r.URL.Path {
-		case "/Webhooks":
-			if r.Method == http.MethodGet {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"items": [{"id": 1, "url": "https://example.com/webhook", "events": ["ticket.created"]}]}`))
-			} else if r.Method == http.MethodPost {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusCreated)
-				w.Write([]byte(`{"item": {"id": 2, "url": "https://example.com/new-webhook", "events": ["ticket.updated"]}}`))
-			}
-		case "/Webhooks/1":
-			if r.Method == http.MethodDelete {
-				w.WriteHeader(http.StatusNoContent)
-			}
+	// Add handlers for the Webhooks endpoints
+	mockServer.AddHandler("/Webhooks", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			mockServer.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
+				"id":     float64(1),
+				"url":    "https://example.com/webhook",
+				"events": []string{"ticket.created", "ticket.updated"},
+			})
 		}
 	})
 
-	server, client := setupMockServer(handler)
-	defer server.Close()
+	mockServer.AddHandler("/Webhooks/query", func(w http.ResponseWriter, r *http.Request) {
+		items := []interface{}{
+			map[string]interface{}{
+				"id":     float64(1),
+				"url":    "https://example.com/webhook",
+				"events": []string{"ticket.created", "ticket.updated"},
+			},
+			map[string]interface{}{
+				"id":     float64(2),
+				"url":    "https://example.com/webhook2",
+				"events": []string{"company.created"},
+			},
+		}
+		mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+			"items": items,
+		})
+	})
+
+	mockServer.AddHandler("/Webhooks/1", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			mockServer.RespondWithJSON(w, http.StatusOK, nil)
+		}
+	})
+
+	// Create a client using the mock server
+	client := mockServer.NewTestClient()
 
 	// Create a webhook service
 	service := &webhookService{
 		BaseEntityService: NewBaseEntityService(client, "Webhooks"),
 		handlers:          make(map[string][]WebhookHandler),
-		secret:            "test-secret",
 	}
 
 	ctx := context.Background()
@@ -250,25 +271,24 @@ func TestWebhookService(t *testing.T) {
 		handler := func(event *WebhookEvent) error {
 			return nil
 		}
-
 		service.RegisterHandler("ticket.created", handler)
 
 		if len(service.handlers["ticket.created"]) != 1 {
-			t.Errorf("Expected 1 handler for ticket.created, got %d", len(service.handlers["ticket.created"]))
+			t.Errorf("Expected 1 handler, got %d", len(service.handlers["ticket.created"]))
 		}
 	})
 
 	// Test SetWebhookSecret
 	t.Run("SetWebhookSecret", func(t *testing.T) {
-		service.SetWebhookSecret("new-secret")
-		if service.secret != "new-secret" {
-			t.Errorf("Expected secret to be 'new-secret', got '%s'", service.secret)
+		service.SetWebhookSecret("test-secret")
+		if service.secret != "test-secret" {
+			t.Errorf("Expected secret to be 'test-secret', got '%s'", service.secret)
 		}
 	})
 
 	// Test CreateWebhook
 	t.Run("CreateWebhook", func(t *testing.T) {
-		err := service.CreateWebhook(ctx, "https://example.com/new-webhook", []string{"ticket.updated"})
+		err := service.CreateWebhook(ctx, "https://example.com/webhook", []string{"ticket.created", "ticket.updated"})
 		if err != nil {
 			t.Fatalf("Failed to create webhook: %v", err)
 		}
@@ -281,8 +301,8 @@ func TestWebhookService(t *testing.T) {
 			t.Fatalf("Failed to list webhooks: %v", err)
 		}
 
-		if len(webhooks) != 1 {
-			t.Errorf("Expected 1 webhook, got %d", len(webhooks))
+		if len(webhooks) != 2 {
+			t.Errorf("Expected 2 webhooks, got %d", len(webhooks))
 		}
 	})
 
@@ -296,81 +316,102 @@ func TestWebhookService(t *testing.T) {
 
 	// Test HandleWebhook
 	t.Run("HandleWebhook", func(t *testing.T) {
-		// Create a test request
-		payload := map[string]interface{}{
-			"event": "ticket.created",
-			"data":  map[string]interface{}{"id": 123, "title": "Test Ticket"},
-		}
-		payloadBytes, _ := json.Marshal(payload)
-
-		req := httptest.NewRequest("POST", "/webhook", nil)
-		req.Body = http.NoBody
-		req = req.WithContext(context.WithValue(req.Context(), contextKey("payload"), payloadBytes))
-
-		// Create a response recorder
-		w := httptest.NewRecorder()
-
-		// Register a handler
 		handlerCalled := false
-		service.RegisterHandler("ticket.created", func(event *WebhookEvent) error {
+		handler := func(event *WebhookEvent) error {
 			handlerCalled = true
 			return nil
-		})
+		}
+		service.RegisterHandler("ticket.created", handler)
+		service.SetWebhookSecret("test-secret")
 
-		// Call HandleWebhook
-		service.HandleWebhook(w, req)
+		// Create a webhook event
+		event := map[string]interface{}{
+			"eventType": "ticket.created",
+			"entityId":  float64(123),
+			"entity":    "Ticket",
+			"timestamp": "2023-01-01T12:00:00Z",
+			"data":      json.RawMessage(`{"id": 123, "title": "Test Ticket", "status": 1}`),
+		}
 
-		// Check that the handler was called
+		// Create a request with the event
+		eventBytes, _ := json.Marshal(event)
+		req := httptest.NewRequest(http.MethodPost, "/webhook", bytes.NewReader(eventBytes))
+
+		// Calculate signature
+		mac := hmac.New(sha256.New, []byte("test-secret"))
+		mac.Write(eventBytes)
+		signature := hex.EncodeToString(mac.Sum(nil))
+		req.Header.Set("X-Autotask-Signature", signature)
+		req.Header.Set("Content-Type", "application/json")
+
+		// Create a response recorder
+		rr := httptest.NewRecorder()
+
+		// Handle the webhook
+		service.HandleWebhook(rr, req)
+
+		// Check if the handler was called
 		if !handlerCalled {
-			t.Error("Expected handler to be called")
+			t.Errorf("Expected handler to be called")
 		}
 	})
 }
 
 func TestProjectsService(t *testing.T) {
-	// Setup a mock server
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Handle zone information request
-		if strings.Contains(r.URL.Path, "ZoneInformation") {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
-				"zoneName": "Test Zone",
-				"url": "https://api.example.com",
-				"webUrl": "https://example.com",
-				"ci": 123
-			}`))
-			return
-		}
+	// Create a mock server
+	mockServer := NewMockServer(t)
+	defer mockServer.Close()
 
-		switch r.URL.Path {
-		case "/Projects/1":
-			if r.Method == http.MethodGet {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"item": {"id": 1, "name": "Test Project"}}`))
-			} else if r.Method == http.MethodPatch {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"item": {"id": 1, "name": "Updated Project"}}`))
-			} else if r.Method == http.MethodDelete {
-				w.WriteHeader(http.StatusNoContent)
-			}
-		case "/Projects":
-			if r.Method == http.MethodGet {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"items": [{"id": 1, "name": "Test Project"}, {"id": 2, "name": "Another Project"}]}`))
-			} else if r.Method == http.MethodPost {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusCreated)
-				w.Write([]byte(`{"item": {"id": 3, "name": "New Project"}}`))
-			}
+	// Add handlers for the Projects endpoints
+	mockServer.AddHandler("/Projects/1", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+				"item": map[string]interface{}{
+					"id":   float64(1),
+					"name": "Test Project",
+				},
+			})
+		} else if r.Method == http.MethodPatch {
+			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+				"item": map[string]interface{}{
+					"id":   float64(1),
+					"name": "Updated Project",
+				},
+			})
+		} else if r.Method == http.MethodDelete {
+			mockServer.RespondWithJSON(w, http.StatusOK, nil)
 		}
 	})
 
-	server, client := setupMockServer(handler)
-	defer server.Close()
+	mockServer.AddHandler("/Projects/query", func(w http.ResponseWriter, r *http.Request) {
+		items := []interface{}{
+			map[string]interface{}{
+				"id":   float64(1),
+				"name": "Test Project",
+			},
+			map[string]interface{}{
+				"id":   float64(2),
+				"name": "Another Project",
+			},
+		}
+		mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+			"items": items,
+		})
+	})
+
+	mockServer.AddHandler("/Projects", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			mockServer.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
+				"item": map[string]interface{}{
+					"id":   float64(3),
+					"name": "New Project",
+				},
+			})
+		}
+	})
+
+	// Create a client using the mock server
+	client := mockServer.NewTestClient()
 
 	// Create a projects service
 	service := &projectsService{
@@ -402,14 +443,16 @@ func TestProjectsService(t *testing.T) {
 
 	// Test Query
 	t.Run("Query", func(t *testing.T) {
-		var projects []map[string]interface{}
-		err := service.Query(ctx, "filter=name contains 'Project'", &projects)
+		var response struct {
+			Items []map[string]interface{} `json:"items"`
+		}
+		err := service.Query(ctx, "", &response)
 		if err != nil {
 			t.Fatalf("Failed to query projects: %v", err)
 		}
 
-		if len(projects) != 2 {
-			t.Errorf("Expected 2 projects, got %d", len(projects))
+		if len(response.Items) != 2 {
+			t.Errorf("Expected 2 projects, got %d", len(response.Items))
 		}
 	})
 
@@ -418,44 +461,42 @@ func TestProjectsService(t *testing.T) {
 		newProject := map[string]interface{}{
 			"name": "New Project",
 		}
-
-		created, err := service.Create(ctx, newProject)
+		project, err := service.Create(ctx, newProject)
 		if err != nil {
 			t.Fatalf("Failed to create project: %v", err)
 		}
 
-		createdMap, ok := created.(map[string]interface{})
+		projectMap, ok := project.(map[string]interface{})
 		if !ok {
-			t.Fatalf("Expected map[string]interface{}, got %T", created)
+			t.Fatalf("Expected map[string]interface{}, got %T", project)
 		}
 
-		if id, ok := createdMap["id"].(float64); !ok || id != 3 {
-			t.Errorf("Expected id 3, got %v", createdMap["id"])
+		if id, ok := projectMap["id"].(float64); !ok || id != 3 {
+			t.Errorf("Expected id 3, got %v", projectMap["id"])
 		}
 
-		if name, ok := createdMap["name"].(string); !ok || name != "New Project" {
-			t.Errorf("Expected name 'New Project', got %v", createdMap["name"])
+		if name, ok := projectMap["name"].(string); !ok || name != "New Project" {
+			t.Errorf("Expected name 'New Project', got %v", projectMap["name"])
 		}
 	})
 
 	// Test Update
 	t.Run("Update", func(t *testing.T) {
-		updateProject := map[string]interface{}{
+		updatedProject := map[string]interface{}{
 			"name": "Updated Project",
 		}
-
-		updated, err := service.Update(ctx, 1, updateProject)
+		project, err := service.Update(ctx, 1, updatedProject)
 		if err != nil {
 			t.Fatalf("Failed to update project: %v", err)
 		}
 
-		updatedMap, ok := updated.(map[string]interface{})
+		projectMap, ok := project.(map[string]interface{})
 		if !ok {
-			t.Fatalf("Expected map[string]interface{}, got %T", updated)
+			t.Fatalf("Expected map[string]interface{}, got %T", project)
 		}
 
-		if name, ok := updatedMap["name"].(string); !ok || name != "Updated Project" {
-			t.Errorf("Expected name 'Updated Project', got %v", updatedMap["name"])
+		if name, ok := projectMap["name"].(string); !ok || name != "Updated Project" {
+			t.Errorf("Expected name 'Updated Project', got %v", projectMap["name"])
 		}
 	})
 

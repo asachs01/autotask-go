@@ -1,0 +1,4332 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>advanced_queries: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/asachs01/autotask-go/examples/advanced_queries/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/asachs01/autotask-go/examples/main.go (0.0%)</option>
+				
+				<option value="file2">github.com/asachs01/autotask-go/examples/pagination/main.go (0.0%)</option>
+				
+				<option value="file3">github.com/asachs01/autotask-go/examples/projects/main.go (0.0%)</option>
+				
+				<option value="file4">github.com/asachs01/autotask-go/examples/simple_pagination/main.go (0.0%)</option>
+				
+				<option value="file5">github.com/asachs01/autotask-go/examples/simple_query/main.go (0.0%)</option>
+				
+				<option value="file6">github.com/asachs01/autotask-go/examples/webhook/main.go (0.0%)</option>
+				
+				<option value="file7">github.com/asachs01/autotask-go/internal/client/client.go (0.0%)</option>
+				
+				<option value="file8">github.com/asachs01/autotask-go/internal/client/entity.go (0.0%)</option>
+				
+				<option value="file9">github.com/asachs01/autotask-go/internal/logger/logger.go (0.0%)</option>
+				
+				<option value="file10">github.com/asachs01/autotask-go/internal/telemetry/telemetry.go (0.0%)</option>
+				
+				<option value="file11">github.com/asachs01/autotask-go/pkg/autotask/client.go (60.0%)</option>
+				
+				<option value="file12">github.com/asachs01/autotask-go/pkg/autotask/entity.go (52.1%)</option>
+				
+				<option value="file13">github.com/asachs01/autotask-go/pkg/autotask/logger.go (97.5%)</option>
+				
+				<option value="file14">github.com/asachs01/autotask-go/pkg/autotask/pagination.go (73.2%)</option>
+				
+				<option value="file15">github.com/asachs01/autotask-go/pkg/autotask/query.go (53.9%)</option>
+				
+				<option value="file16">github.com/asachs01/autotask-go/pkg/autotask/rate_limiter.go (100.0%)</option>
+				
+				<option value="file17">github.com/asachs01/autotask-go/pkg/autotask/retry.go (94.3%)</option>
+				
+				<option value="file18">github.com/asachs01/autotask-go/pkg/autotask/services.go (67.9%)</option>
+				
+				<option value="file19">github.com/asachs01/autotask-go/pkg/autotask/test_helpers.go (63.0%)</option>
+				
+				<option value="file20">github.com/asachs01/autotask-go/pkg/autotask/types.go (66.7%)</option>
+				
+				<option value="file21">github.com/asachs01/autotask-go/pkg/types/types.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "os"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Create a context with timeout for all operations
+        ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+        defer cancel()
+
+        // Example 1: Simple filter
+        fmt.Println("Example 1: Simple filter - Active tickets with high priority")
+        var ticketResponse1 struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err := client.Tickets().Query(ctx, "Status!=5 AND Priority=1", &amp;ticketResponse1)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d active high-priority tickets\n", len(ticketResponse1.Items))
+        for i, t := range ticketResponse1.Items </span><span class="cov0" title="0">{
+                if i &lt; 3 </span><span class="cov0" title="0">{ // Only print the first 3
+                        fmt.Printf("  - %s (ID: %d, Priority: %d)\n", t.Title, t.ID, t.Priority)
+                }</span>
+        }
+
+        // Example 2: Complex filter with OR condition
+        <span class="cov0" title="0">fmt.Println("\nExample 2: Complex filter with OR condition - Tickets assigned to specific resources")
+        var ticketResponse2 struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        // Replace with actual resource IDs from your environment
+        err = client.Tickets().Query(ctx, "AssignedResourceID=123 OR AssignedResourceID=456", &amp;ticketResponse2)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d tickets assigned to specific resources\n", len(ticketResponse2.Items))
+        for i, t := range ticketResponse2.Items </span><span class="cov0" title="0">{
+                if i &lt; 3 </span><span class="cov0" title="0">{ // Only print the first 3
+                        fmt.Printf("  - %s (ID: %d, Assigned To: %d)\n", t.Title, t.ID, t.AssignedResourceID)
+                }</span>
+        }
+
+        // Example 3: Complex filter with nested conditions
+        <span class="cov0" title="0">fmt.Println("\nExample 3: Complex filter with nested conditions - Active tickets with specific criteria")
+        var ticketResponse3 struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        // Find active tickets that are either high priority or assigned to a specific resource
+        err = client.Tickets().Query(ctx, "Status!=5 AND (Priority=1 OR AssignedResourceID=123)", &amp;ticketResponse3)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d tickets matching complex criteria\n", len(ticketResponse3.Items))
+        for i, t := range ticketResponse3.Items </span><span class="cov0" title="0">{
+                if i &lt; 3 </span><span class="cov0" title="0">{ // Only print the first 3
+                        fmt.Printf("  - %s (ID: %d, Priority: %d, Assigned To: %d)\n",
+                                t.Title, t.ID, t.Priority, t.AssignedResourceID)
+                }</span>
+        }
+
+        // Example 4: Using the 'contains' operator
+        <span class="cov0" title="0">fmt.Println("\nExample 4: Using the 'contains' operator - Tickets with specific text in title")
+        var ticketResponse4 struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err = client.Tickets().Query(ctx, "Title contains 'error'", &amp;ticketResponse4)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d tickets with 'error' in the title\n", len(ticketResponse4.Items))
+        for i, t := range ticketResponse4.Items </span><span class="cov0" title="0">{
+                if i &lt; 3 </span><span class="cov0" title="0">{ // Only print the first 3
+                        fmt.Printf("  - %s (ID: %d)\n", t.Title, t.ID)
+                }</span>
+        }
+
+        // Example 5: Date range filtering
+        <span class="cov0" title="0">fmt.Println("\nExample 5: Date range filtering - Tickets created in the last 7 days")
+        var ticketResponse5 struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        sevenDaysAgo := time.Now().AddDate(0, 0, -7).Format("2006-01-02")
+        err = client.Tickets().Query(ctx, "CreateDate&gt;"+sevenDaysAgo, &amp;ticketResponse5)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d tickets created in the last 7 days\n", len(ticketResponse5.Items))
+        for i, t := range ticketResponse5.Items </span><span class="cov0" title="0">{
+                if i &lt; 3 </span><span class="cov0" title="0">{ // Only print the first 3
+                        fmt.Printf("  - %s (ID: %d, Created: %s)\n", t.Title, t.ID, t.CreateDate)
+                }</span>
+        }
+
+        // Example 6: Projects with tasks that have time entries
+        <span class="cov0" title="0">fmt.Println("\nExample 6: Projects with active tasks")
+        var projectResponse struct {
+                Items       []autotask.Project   `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err = client.Projects().Query(ctx, "Status=1", &amp;projectResponse)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying projects: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">if len(projectResponse.Items) &gt; 0 </span><span class="cov0" title="0">{
+                projectID := projectResponse.Items[0].ID
+                fmt.Printf("Looking at tasks for project ID %d (%s)\n",
+                        projectID, projectResponse.Items[0].ProjectName)
+
+                var taskResponse struct {
+                        Items       []autotask.Task      `json:"items"`
+                        PageDetails autotask.PageDetails `json:"pageDetails"`
+                }
+                // Find active tasks for this project
+                err = client.Tasks().Query(ctx,
+                        fmt.Sprintf("ProjectID=%d AND Status!=5", projectID),
+                        &amp;taskResponse)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error querying tasks: %v", err)
+                }</span>
+
+                <span class="cov0" title="0">fmt.Printf("Found %d active tasks for this project\n", len(taskResponse.Items))
+                for i, t := range taskResponse.Items </span><span class="cov0" title="0">{
+                        if i &lt; 3 </span><span class="cov0" title="0">{ // Only print the first 3
+                                fmt.Printf("  - %s (ID: %d, Status: %d)\n", t.Title, t.ID, t.Status)
+                        }</span>
+                }
+        }
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "log"
+        "os"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Create a context with timeout for all operations
+        ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+        defer cancel()
+
+        // Example 1: Get the root company (ID 0)
+        fmt.Println("Getting root company...")
+        var company autotask.Company
+        result, err := client.Companies().Get(ctx, 0)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error getting company: %v", err)
+        }</span>
+        <span class="cov0" title="0">if resultMap, ok := result.(map[string]interface{}); ok </span><span class="cov0" title="0">{
+                if err := mapToStruct(resultMap, &amp;company); err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting map to struct: %v", err)
+                }</span>
+        } else<span class="cov0" title="0"> {
+                log.Fatal("Expected map result from Get")
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Root Company: %s (ID: %d)\n", company.CompanyName, company.ID)
+
+        // Example 2: Query active companies
+        fmt.Println("\nQuerying active companies...")
+        var companyResponse struct {
+                Items       []autotask.Company   `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err = client.Companies().Query(ctx, "", &amp;companyResponse)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying companies: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d active companies\n", len(companyResponse.Items))
+        for i, c := range companyResponse.Items </span><span class="cov0" title="0">{
+                if i &lt; 5 </span><span class="cov0" title="0">{ // Only print the first 5
+                        fmt.Printf("  - %s (ID: %d)\n", c.CompanyName, c.ID)
+                }</span>
+        }
+
+        // Example 3: Count active tickets
+        <span class="cov0" title="0">fmt.Println("\nCounting active tickets...")
+        count, err := client.Tickets().Count(ctx, "")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error counting tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d active tickets\n", count)
+
+        // Query tickets with pagination
+        fmt.Println("\nQuerying tickets with pagination...")
+        var ticketResponse struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err = client.Tickets().Query(ctx, "", &amp;ticketResponse)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Page %d of tickets (showing %d of %d total)\n",
+                ticketResponse.PageDetails.PageNumber,
+                len(ticketResponse.Items),
+                ticketResponse.PageDetails.Count)
+
+        // Example 5: Get the next page of tickets if available
+        if ticketResponse.PageDetails.NextPageUrl != "" </span><span class="cov0" title="0">{
+                fmt.Println("\nGetting next page of tickets...")
+                nextPageTickets, err := client.Tickets().GetNextPage(ctx, ticketResponse.PageDetails)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error getting next page: %v", err)
+                }</span>
+                <span class="cov0" title="0">fmt.Printf("Next page contains %d tickets\n", len(nextPageTickets))</span>
+        }
+
+        // Example 6: Query resources
+        <span class="cov0" title="0">fmt.Println("\nQuerying resources...")
+        var resourceResponse struct {
+                Items       []autotask.Resource  `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err = client.Resources().Query(ctx, "", &amp;resourceResponse)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying resources: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d active resources\n", len(resourceResponse.Items))
+        for i, r := range resourceResponse.Items </span><span class="cov0" title="0">{
+                if i &lt; 5 </span><span class="cov0" title="0">{ // Only print the first 5
+                        fmt.Printf("  - %s %s (ID: %d)\n", r.FirstName, r.LastName, r.ID)
+                }</span>
+        }
+}
+
+// Helper function to convert map to struct
+func mapToStruct(m map[string]interface{}, v interface{}) error <span class="cov0" title="0">{
+        data, err := json.Marshal(m)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return json.Unmarshal(data, v)</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "os"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Create a context with timeout for all operations
+        ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+        defer cancel()
+
+        // Example 1: Using the PaginationIterator to iterate through tickets
+        fmt.Println("Example 1: Using the PaginationIterator to iterate through tickets")
+
+        // Create an iterator with a small page size to demonstrate pagination
+        iterator, err := autotask.NewPaginationIterator(ctx, client.Tickets(), "Status!=5", 5)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error creating pagination iterator: %v", err)
+        }</span>
+
+        // Iterate through tickets
+        <span class="cov0" title="0">fmt.Println("Iterating through tickets:")
+        count := 0
+        for iterator.Next() </span><span class="cov0" title="0">{
+                item := iterator.Item()
+                if ticketMap, ok := item.(map[string]interface{}); ok </span><span class="cov0" title="0">{
+                        fmt.Printf("  Page %d, Ticket %d: %v\n",
+                                iterator.CurrentPage()-1, // CurrentPage returns the next page to fetch
+                                count+1,
+                                ticketMap["title"])
+                }</span>
+                <span class="cov0" title="0">count++
+                if count &gt;= 10 </span><span class="cov0" title="0">{ // Show first 10 tickets across pages
+                        break</span>
+                }
+        }
+        <span class="cov0" title="0">fmt.Printf("Total tickets available: %d\n", iterator.TotalCount())
+
+        // Example 2: Using FetchAllPagesWithCallback to process tickets in batches
+        fmt.Println("\nExample 2: Using FetchAllPagesWithCallback to process tickets in batches")
+
+        // Track tickets processed per page
+        ticketsPerPage := make(map[int]int)
+        maxPages := 3 // Limit to 3 pages
+
+        err = autotask.FetchAllPagesWithCallback[autotask.Ticket](
+                ctx,
+                client.Tickets(),
+                "Status!=5",
+                func(items []autotask.Ticket, pageDetails autotask.PageDetails) error </span><span class="cov0" title="0">{
+                        ticketsPerPage[pageDetails.PageNumber] = len(items)
+                        fmt.Printf("  Processing page %d (%d items)\n", pageDetails.PageNumber, len(items))
+
+                        // Print first 3 tickets from this page
+                        for i, ticket := range items </span><span class="cov0" title="0">{
+                                if i &lt; 3 </span><span class="cov0" title="0">{
+                                        fmt.Printf("    Ticket %d: %s (ID: %d)\n", i+1, ticket.Title, ticket.ID)
+                                }</span>
+                                <span class="cov0" title="0">if i == 2 &amp;&amp; len(items) &gt; 3 </span><span class="cov0" title="0">{
+                                        fmt.Printf("    ... and %d more tickets\n", len(items)-3)
+                                }</span>
+                        }
+
+                        // Stop after processing maxPages
+                        <span class="cov0" title="0">if pageDetails.PageNumber &gt;= maxPages </span><span class="cov0" title="0">{
+                                return fmt.Errorf("reached max pages")
+                        }</span>
+
+                        <span class="cov0" title="0">return nil</span>
+                },
+        )
+        <span class="cov0" title="0">if err != nil &amp;&amp; err.Error() != "reached max pages" </span><span class="cov0" title="0">{
+                log.Fatalf("Error processing tickets with callback: %v", err)
+        }</span>
+
+        // Print summary
+        <span class="cov0" title="0">var totalProcessed int
+        for page, count := range ticketsPerPage </span><span class="cov0" title="0">{
+                totalProcessed += count
+                fmt.Printf("  Page %d: %d tickets\n", page, count)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Processed %d tickets from %d pages\n", totalProcessed, len(ticketsPerPage))
+
+        // Example 3: Using FetchPage to get a specific page of results
+        fmt.Println("\nExample 3: Using FetchPage to get a specific page of results")
+
+        // Get page 2
+        options := autotask.PaginationOptions{
+                Page:     2,
+                PageSize: 5,
+        }
+        page, err := autotask.FetchPage[autotask.Ticket](
+                ctx,
+                client.Tickets(),
+                "Status!=5",
+                options,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error fetching page: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Printf("Page %d - Found %d tickets\n", page.PageDetails.PageNumber, len(page.Items))
+        for i, ticket := range page.Items </span><span class="cov0" title="0">{
+                fmt.Printf("  Ticket %d: %s (ID: %d)\n", i+1, ticket.Title, ticket.ID)
+        }</span>
+
+        // Show pagination information
+        <span class="cov0" title="0">fmt.Println("\nPagination information:")
+        fmt.Printf("  Current page: %d\n", page.PageDetails.PageNumber)
+        fmt.Printf("  Page size: %d\n", page.PageDetails.PageSize)
+        fmt.Printf("  Total items: %d\n", page.PageDetails.Count)
+        fmt.Printf("  Has next page: %v\n", page.PageDetails.NextPageUrl != "")
+        fmt.Printf("  Has previous page: %v\n", page.PageDetails.PrevPageUrl != "")</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package main
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "log"
+        "os"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Create a context with timeout for all operations
+        ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+        defer cancel()
+
+        // Example 1: Query active projects
+        fmt.Println("Querying active projects...")
+        var projectResponse struct {
+                Items       []autotask.Project   `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+        err := client.Projects().Query(ctx, "Status!=5", &amp;projectResponse) // Status 5 is typically "Completed"
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying projects: %v", err)
+        }</span>
+        <span class="cov0" title="0">fmt.Printf("Found %d active projects\n", len(projectResponse.Items))
+        for i, p := range projectResponse.Items </span><span class="cov0" title="0">{
+                if i &lt; 5 </span><span class="cov0" title="0">{ // Only print the first 5
+                        fmt.Printf("  - %s (ID: %d)\n", p.ProjectName, p.ID)
+                }</span>
+        }
+
+        // Example 2: Get project details
+        <span class="cov0" title="0">if len(projectResponse.Items) &gt; 0 </span><span class="cov0" title="0">{
+                projectID := projectResponse.Items[0].ID
+                fmt.Printf("\nGetting details for project ID %d...\n", projectID)
+                var project autotask.Project
+                result, err := client.Projects().Get(ctx, projectID)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error getting project: %v", err)
+                }</span>
+                <span class="cov0" title="0">if resultMap, ok := result.(map[string]interface{}); ok </span><span class="cov0" title="0">{
+                        if err := mapToStruct(resultMap, &amp;project); err != nil </span><span class="cov0" title="0">{
+                                log.Fatalf("Error converting map to struct: %v", err)
+                        }</span>
+                } else<span class="cov0" title="0"> {
+                        log.Fatal("Expected map result from Get")
+                }</span>
+                <span class="cov0" title="0">fmt.Printf("Project: %s\n", project.ProjectName)
+                fmt.Printf("  Description: %s\n", project.Description)
+                fmt.Printf("  Status: %d\n", project.Status)
+                fmt.Printf("  Start Date: %s\n", project.StartDate)
+                fmt.Printf("  End Date: %s\n", project.EndDate)
+                fmt.Printf("  Estimated Hours: %.2f\n", project.EstimatedHours)
+                fmt.Printf("  Completed Percentage: %.2f%%\n", project.CompletedPercentage)
+
+                // Example 3: Query tasks for this project
+                fmt.Printf("\nQuerying tasks for project ID %d...\n", projectID)
+                var taskResponse struct {
+                        Items       []autotask.Task      `json:"items"`
+                        PageDetails autotask.PageDetails `json:"pageDetails"`
+                }
+                err = client.Tasks().Query(ctx, fmt.Sprintf("ProjectID=%d", projectID), &amp;taskResponse)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error querying tasks: %v", err)
+                }</span>
+                <span class="cov0" title="0">fmt.Printf("Found %d tasks for this project\n", len(taskResponse.Items))
+                for i, t := range taskResponse.Items </span><span class="cov0" title="0">{
+                        if i &lt; 5 </span><span class="cov0" title="0">{ // Only print the first 5
+                                fmt.Printf("  - %s (ID: %d, Status: %d)\n", t.Title, t.ID, t.Status)
+                        }</span>
+                }
+
+                // Example 4: Query time entries for this project's tasks
+                <span class="cov0" title="0">if len(taskResponse.Items) &gt; 0 </span><span class="cov0" title="0">{
+                        taskID := taskResponse.Items[0].ID
+                        fmt.Printf("\nQuerying time entries for task ID %d...\n", taskID)
+                        var timeEntryResponse struct {
+                                Items       []autotask.TimeEntry `json:"items"`
+                                PageDetails autotask.PageDetails `json:"pageDetails"`
+                        }
+                        err = client.TimeEntries().Query(ctx, fmt.Sprintf("TaskID=%d", taskID), &amp;timeEntryResponse)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Fatalf("Error querying time entries: %v", err)
+                        }</span>
+                        <span class="cov0" title="0">fmt.Printf("Found %d time entries for this task\n", len(timeEntryResponse.Items))
+                        var totalHours float64
+                        for i, te := range timeEntryResponse.Items </span><span class="cov0" title="0">{
+                                totalHours += te.HoursWorked
+                                if i &lt; 5 </span><span class="cov0" title="0">{ // Only print the first 5
+                                        fmt.Printf("  - Date: %s, Hours: %.2f, Resource ID: %d\n", te.DateWorked, te.HoursWorked, te.ResourceID)
+                                }</span>
+                        }
+                        <span class="cov0" title="0">fmt.Printf("Total hours worked on this task: %.2f\n", totalHours)</span>
+                }
+        }
+}
+
+// Helper function to convert map to struct
+func mapToStruct(m map[string]interface{}, v interface{}) error <span class="cov0" title="0">{
+        data, err := json.Marshal(m)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return json.Unmarshal(data, v)</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "os"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Create a context with timeout for all operations
+        ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+        defer cancel()
+
+        // Example: Basic pagination with the FetchPage helper
+        fmt.Println("Example: Basic pagination with the FetchPage helper")
+
+        // First page - using FetchPage helper
+        page1, err := autotask.FetchPage[autotask.Ticket](
+                ctx,
+                client.Tickets(),
+                "Status!=5",
+                autotask.PaginationOptions{
+                        Page:     1,
+                        PageSize: 5,
+                },
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error fetching page 1: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Printf("Page 1 - Found %d tickets (total: %d)\n", len(page1.Items), page1.PageDetails.Count)
+        for i, ticket := range page1.Items </span><span class="cov0" title="0">{
+                fmt.Printf("  Ticket %d: %s (ID: %d)\n", i+1, ticket.Title, ticket.ID)
+        }</span>
+
+        // Check if there's a next page
+        <span class="cov0" title="0">if page1.PageDetails.NextPageUrl != "" </span><span class="cov0" title="0">{
+                fmt.Println("\nFetching page 2...")
+
+                // Second page - using FetchPage helper
+                page2, err := autotask.FetchPage[autotask.Ticket](
+                        ctx,
+                        client.Tickets(),
+                        "Status!=5",
+                        autotask.PaginationOptions{
+                                Page:     2,
+                                PageSize: 5,
+                        },
+                )
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error fetching page 2: %v", err)
+                }</span>
+
+                <span class="cov0" title="0">fmt.Printf("Page 2 - Found %d tickets\n", len(page2.Items))
+                for i, ticket := range page2.Items </span><span class="cov0" title="0">{
+                        fmt.Printf("  Ticket %d: %s (ID: %d)\n", i+1, ticket.Title, ticket.ID)
+                }</span>
+        } else<span class="cov0" title="0"> {
+                fmt.Println("\nNo more pages available.")
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "os"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Create a context with timeout for all operations
+        ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+        defer cancel()
+
+        // Example: Basic query
+        fmt.Println("Example: Basic query for active tickets")
+
+        var ticketResponse struct {
+                Items       []autotask.Ticket    `json:"items"`
+                PageDetails autotask.PageDetails `json:"pageDetails"`
+        }
+
+        err := client.Tickets().Query(ctx, "Status!=5", &amp;ticketResponse)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Error querying tickets: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Printf("Found %d tickets (total: %d)\n", len(ticketResponse.Items), ticketResponse.PageDetails.Count)
+        for i, ticket := range ticketResponse.Items </span><span class="cov0" title="0">{
+                if i &lt; 5 </span><span class="cov0" title="0">{ // Only show the first 5 for brevity
+                        fmt.Printf("  Ticket %d: %s (ID: %d)\n", i+1, ticket.Title, ticket.ID)
+                }</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package main
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "log"
+        "net/http"
+        "os"
+        "os/signal"
+        "syscall"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+func main() <span class="cov0" title="0">{
+        // Create a new Autotask client
+        client := autotask.NewClient(
+                os.Getenv("AUTOTASK_USERNAME"),
+                os.Getenv("AUTOTASK_SECRET"),
+                os.Getenv("AUTOTASK_INTEGRATION_CODE"),
+        )
+
+        // Enable debug mode
+        client.SetDebugMode(true)
+
+        // Set webhook secret for verification
+        client.Webhooks().SetWebhookSecret(os.Getenv("WEBHOOK_SECRET"))
+
+        // Register webhook handlers for different event types
+        client.Webhooks().RegisterHandler("ticket.created", handleTicketCreated)
+        client.Webhooks().RegisterHandler("ticket.updated", handleTicketUpdated)
+        client.Webhooks().RegisterHandler("ticket.deleted", handleTicketDeleted)
+
+        // Create a webhook (if needed)
+        // This registers your webhook URL with Autotask
+        // Note: You only need to do this once, not on every startup
+        if os.Getenv("REGISTER_WEBHOOK") == "true" </span><span class="cov0" title="0">{
+                ctx := context.Background()
+                webhookURL := os.Getenv("WEBHOOK_URL")
+                events := []string{"ticket.created", "ticket.updated", "ticket.deleted"}
+
+                fmt.Println("Registering webhook at:", webhookURL)
+                err := client.Webhooks().CreateWebhook(ctx, webhookURL, events)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Failed to create webhook: %v", err)
+                }</span>
+                <span class="cov0" title="0">fmt.Println("Webhook registered successfully")</span>
+        }
+
+        // Set up HTTP server to handle webhook callbacks
+        <span class="cov0" title="0">http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                client.Webhooks().HandleWebhook(w, r)
+        }</span>)
+
+        // Start the HTTP server
+        <span class="cov0" title="0">server := &amp;http.Server{
+                Addr:    ":8080",
+                Handler: http.DefaultServeMux,
+        }
+
+        // Start the server in a goroutine
+        go func() </span><span class="cov0" title="0">{
+                fmt.Println("Starting webhook server on :8080")
+                if err := server.ListenAndServe(); err != nil &amp;&amp; err != http.ErrServerClosed </span><span class="cov0" title="0">{
+                        log.Fatalf("Server error: %v", err)
+                }</span>
+        }()
+
+        // Set up graceful shutdown
+        <span class="cov0" title="0">stop := make(chan os.Signal, 1)
+        signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+        // Wait for interrupt signal
+        &lt;-stop
+        fmt.Println("Shutting down server...")
+
+        // Create a deadline for server shutdown
+        ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+        defer cancel()
+
+        // Attempt graceful shutdown
+        if err := server.Shutdown(ctx); err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Server forced to shutdown: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Println("Server gracefully stopped")</span>
+}
+
+// Handler for ticket.created events
+func handleTicketCreated(event *autotask.WebhookEvent) error <span class="cov0" title="0">{
+        fmt.Printf("Ticket created: ID=%d\n", event.EntityID)
+
+        // You can unmarshal the event.Data into a specific struct if needed
+        var ticketData map[string]interface{}
+        if err := json.Unmarshal(event.Data, &amp;ticketData); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to parse ticket data: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Printf("Ticket details: %+v\n", ticketData)
+        return nil</span>
+}
+
+// Handler for ticket.updated events
+func handleTicketUpdated(event *autotask.WebhookEvent) error <span class="cov0" title="0">{
+        fmt.Printf("Ticket updated: ID=%d\n", event.EntityID)
+        return nil
+}</span>
+
+// Handler for ticket.deleted events
+func handleTicketDeleted(event *autotask.WebhookEvent) error <span class="cov0" title="0">{
+        fmt.Printf("Ticket deleted: ID=%d\n", event.EntityID)
+        return nil
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package client
+
+import (
+        "bytes"
+        "context"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+        "net/url"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+// Client represents an Autotask API client
+type Client struct {
+        // HTTP client used to communicate with the API
+        client *http.Client
+
+        // Base URL for API requests
+        baseURL *url.URL
+
+        // User agent used when communicating with the Autotask API
+        UserAgent string
+
+        // API credentials
+        username        string
+        secret          string
+        integrationCode string
+
+        // Rate limiter
+        rateLimiter *autotask.RateLimiter
+}
+
+// NewClient returns a new Autotask API client
+func NewClient(username, secret, integrationCode string) *Client <span class="cov0" title="0">{
+        httpClient := &amp;http.Client{
+                Timeout: time.Second * 30,
+        }
+
+        return &amp;Client{
+                client:          httpClient,
+                UserAgent:       "Autotask Go Client",
+                username:        username,
+                secret:          secret,
+                integrationCode: integrationCode,
+                rateLimiter:     autotask.NewRateLimiter(60), // Default to 60 requests per minute
+        }
+}</span>
+
+// newRequest creates a new HTTP request
+func (c *Client) newRequest(ctx context.Context, method, path string, body interface{}) (*http.Request, error) <span class="cov0" title="0">{
+        rel, err := url.Parse(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">u := c.baseURL.ResolveReference(rel)
+        var buf io.ReadWriter
+        if body != nil </span><span class="cov0" title="0">{
+                buf = new(bytes.Buffer)
+                err = json.NewEncoder(buf).Encode(body)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+
+        <span class="cov0" title="0">req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">if body != nil </span><span class="cov0" title="0">{
+                req.Header.Set("Content-Type", "application/json")
+        }</span>
+        <span class="cov0" title="0">req.Header.Set("Accept", "application/json")
+        req.Header.Set("User-Agent", c.UserAgent)
+
+        return req, nil</span>
+}
+
+// do performs the HTTP request
+func (c *Client) do(req *http.Request, v interface{}) error <span class="cov0" title="0">{
+        c.rateLimiter.Wait()
+
+        resp, err := c.client.Do(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">defer resp.Body.Close()
+
+        if resp.StatusCode &gt;= 400 </span><span class="cov0" title="0">{
+                var errResp autotask.ErrorResponse
+                if err := json.NewDecoder(resp.Body).Decode(&amp;errResp); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error decoding error response: %v", err)
+                }</span>
+                <span class="cov0" title="0">errResp.Response = resp
+                return &amp;errResp</span>
+        }
+
+        <span class="cov0" title="0">if v != nil </span><span class="cov0" title="0">{
+                return json.NewDecoder(resp.Body).Decode(v)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package client
+
+import (
+        "context"
+        "fmt"
+        "net/http"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+// EntityService implements the base entity service interface
+type EntityService struct {
+        client     *Client
+        entityName string
+}
+
+// Get gets an entity by ID
+func (s *EntityService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov0" title="0">{
+        path := fmt.Sprintf("/%s/%d", s.entityName, id)
+        req, err := s.client.newRequest(ctx, http.MethodGet, path, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">var result interface{}
+        if err := s.client.do(req, &amp;result); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+// Query queries entities with a filter
+func (s *EntityService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov0" title="0">{
+        path := "/" + s.entityName + "/query"
+        req, err := s.client.newRequest(ctx, http.MethodGet, path, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return s.client.do(req, result)</span>
+}
+
+// Create creates a new entity
+func (s *EntityService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        path := "/" + s.entityName
+        req, err := s.client.newRequest(ctx, http.MethodPost, path, entity)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">var result interface{}
+        if err := s.client.do(req, &amp;result); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+// Update updates an existing entity
+func (s *EntityService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        path := fmt.Sprintf("/%s/%d", s.entityName, id)
+        req, err := s.client.newRequest(ctx, http.MethodPatch, path, entity)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">var result interface{}
+        if err := s.client.do(req, &amp;result); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+// Delete deletes an entity by ID
+func (s *EntityService) Delete(ctx context.Context, id int64) error <span class="cov0" title="0">{
+        path := fmt.Sprintf("/%s/%d", s.entityName, id)
+        req, err := s.client.newRequest(ctx, http.MethodDelete, path, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return s.client.do(req, nil)</span>
+}
+
+// Count counts entities matching a filter
+func (s *EntityService) Count(ctx context.Context, filter string) (int, error) <span class="cov0" title="0">{
+        path := "/" + s.entityName + "/count"
+        req, err := s.client.newRequest(ctx, http.MethodGet, path, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+
+        <span class="cov0" title="0">var count struct {
+                Count int `json:"count"`
+        }
+        if err := s.client.do(req, &amp;count); err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+
+        <span class="cov0" title="0">return count.Count, nil</span>
+}
+
+// Pagination handles paginated results
+func (s *EntityService) Pagination(ctx context.Context, url string, result interface{}) error <span class="cov0" title="0">{
+        req, err := s.client.newRequest(ctx, "GET", url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return s.client.do(req, result)</span>
+}
+
+// BatchCreate creates multiple entities in a single request
+func (s *EntityService) BatchCreate(ctx context.Context, entities []interface{}, result interface{}) error <span class="cov0" title="0">{
+        path := "/" + s.entityName + "/batch"
+        req, err := s.client.newRequest(ctx, http.MethodPost, path, entities)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return s.client.do(req, result)</span>
+}
+
+// BatchUpdate updates multiple entities in a single request
+func (s *EntityService) BatchUpdate(ctx context.Context, entities []interface{}, result interface{}) error <span class="cov0" title="0">{
+        path := "/" + s.entityName + "/batch"
+        req, err := s.client.newRequest(ctx, http.MethodPatch, path, entities)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return s.client.do(req, result)</span>
+}
+
+// BatchDelete deletes multiple entities in a single request
+func (s *EntityService) BatchDelete(ctx context.Context, ids []int64) error <span class="cov0" title="0">{
+        path := "/" + s.entityName + "/batch"
+        req, err := s.client.newRequest(ctx, http.MethodDelete, path, ids)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return s.client.do(req, nil)</span>
+}
+
+// GetNextPage gets the next page of results
+func (s *EntityService) GetNextPage(ctx context.Context, pageDetails autotask.PageDetails) ([]interface{}, error) <span class="cov0" title="0">{
+        if pageDetails.NextPageUrl == "" </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">var result autotask.ListResponse
+        err := s.Pagination(ctx, pageDetails.NextPageUrl, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return result.Items, nil</span>
+}
+
+// GetPreviousPage gets the previous page of results
+func (s *EntityService) GetPreviousPage(ctx context.Context, pageDetails autotask.PageDetails) ([]interface{}, error) <span class="cov0" title="0">{
+        if pageDetails.PrevPageUrl == "" </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">var result autotask.ListResponse
+        err := s.Pagination(ctx, pageDetails.PrevPageUrl, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return result.Items, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package logger
+
+import (
+        "encoding/json"
+        "log"
+        "os"
+        "strings"
+        "time"
+
+        "github.com/asachs01/autotask-go/pkg/autotask"
+)
+
+// LogLevel represents the level of logging
+type LogLevel int
+
+const (
+        // LogLevelDebug represents debug level logging
+        LogLevelDebug LogLevel = iota
+        // LogLevelInfo represents info level logging
+        LogLevelInfo
+        // LogLevelWarn represents warning level logging
+        LogLevelWarn
+        // LogLevelError represents error level logging
+        LogLevelError
+)
+
+// LogEntry represents a structured log entry
+type LogEntry struct {
+        Timestamp time.Time              `json:"timestamp"`
+        Level     string                 `json:"level"`
+        Message   string                 `json:"message"`
+        Fields    map[string]interface{} `json:"fields,omitempty"`
+}
+
+// Logger handles logging for the Autotask client
+type Logger struct {
+        level     autotask.LogLevel
+        logger    *log.Logger
+        debugMode bool
+        output    *os.File
+}
+
+// New creates a new logger instance
+func New(level autotask.LogLevel, debugMode bool) *Logger <span class="cov0" title="0">{
+        return &amp;Logger{
+                level:     level,
+                logger:    log.New(os.Stdout, "", 0), // Remove default flags as we handle timestamp ourselves
+                debugMode: debugMode,
+                output:    os.Stdout,
+        }
+}</span>
+
+// log writes a structured log entry
+func (l *Logger) log(level string, msg string, fields map[string]interface{}) <span class="cov0" title="0">{
+        entry := LogEntry{
+                Timestamp: time.Now().UTC(),
+                Level:     level,
+                Message:   msg,
+                Fields:    fields,
+        }
+
+        data, err := json.Marshal(entry)
+        if err != nil </span><span class="cov0" title="0">{
+                // Fallback to basic logging if JSON marshaling fails
+                l.logger.Printf("[%s] %s %v", level, msg, fields)
+                return
+        }</span>
+
+        <span class="cov0" title="0">l.logger.Println(string(data))</span>
+}
+
+// Debug logs a debug message with optional fields
+func (l *Logger) Debug(msg string, fields map[string]interface{}) <span class="cov0" title="0">{
+        if l.level &lt;= autotask.LogLevelDebug &amp;&amp; l.debugMode </span><span class="cov0" title="0">{
+                l.log("DEBUG", msg, fields)
+        }</span>
+}
+
+// Info logs an info message with optional fields
+func (l *Logger) Info(msg string, fields map[string]interface{}) <span class="cov0" title="0">{
+        if l.level &lt;= autotask.LogLevelInfo </span><span class="cov0" title="0">{
+                l.log("INFO", msg, fields)
+        }</span>
+}
+
+// Warn logs a warning message with optional fields
+func (l *Logger) Warn(msg string, fields map[string]interface{}) <span class="cov0" title="0">{
+        if l.level &lt;= autotask.LogLevelWarn </span><span class="cov0" title="0">{
+                l.log("WARN", msg, fields)
+        }</span>
+}
+
+// Error logs an error message with optional fields
+func (l *Logger) Error(msg string, fields map[string]interface{}) <span class="cov0" title="0">{
+        if l.level &lt;= autotask.LogLevelError </span><span class="cov0" title="0">{
+                l.log("ERROR", msg, fields)
+        }</span>
+}
+
+// SetLevel sets the logging level
+func (l *Logger) SetLevel(level autotask.LogLevel) <span class="cov0" title="0">{
+        l.level = level
+}</span>
+
+// SetDebugMode sets the debug mode
+func (l *Logger) SetDebugMode(debug bool) <span class="cov0" title="0">{
+        l.debugMode = debug
+}</span>
+
+// SetOutput sets the output writer for the logger
+func (l *Logger) SetOutput(output *os.File) <span class="cov0" title="0">{
+        l.output = output
+        l.logger.SetOutput(output)
+}</span>
+
+// LogRequest logs an API request with structured fields
+func (l *Logger) LogRequest(method, url string, headers map[string]string) <span class="cov0" title="0">{
+        if l.debugMode </span><span class="cov0" title="0">{
+                fields := map[string]interface{}{
+                        "method": method,
+                        "url":    url,
+                }
+
+                // Mask sensitive information in headers
+                safeHeaders := make(map[string]string)
+                for key, value := range headers </span><span class="cov0" title="0">{
+                        if strings.ToLower(key) == "authorization" || strings.ToLower(key) == "secret" </span><span class="cov0" title="0">{
+                                safeHeaders[key] = value[:10] + "..."
+                        }</span> else<span class="cov0" title="0"> {
+                                safeHeaders[key] = value
+                        }</span>
+                }
+                <span class="cov0" title="0">fields["headers"] = safeHeaders
+
+                l.Debug("API Request", fields)</span>
+        }
+}
+
+// LogResponse logs an API response with structured fields
+func (l *Logger) LogResponse(statusCode int, headers map[string]string) <span class="cov0" title="0">{
+        if l.debugMode </span><span class="cov0" title="0">{
+                fields := map[string]interface{}{
+                        "status_code": statusCode,
+                        "headers":     headers,
+                }
+                l.Debug("API Response", fields)
+        }</span>
+}
+
+// LogError logs an API error with structured fields
+func (l *Logger) LogError(err error) <span class="cov0" title="0">{
+        fields := map[string]interface{}{
+                "error": err.Error(),
+        }
+        if apiErr, ok := err.(*autotask.ErrorResponse); ok </span><span class="cov0" title="0">{
+                fields["status_code"] = apiErr.Response.StatusCode
+                fields["errors"] = apiErr.Errors
+        }</span>
+        <span class="cov0" title="0">l.Error("API Error", fields)</span>
+}
+
+// LogRateLimit logs rate limiting information
+func (l *Logger) LogRateLimit(waitTime time.Duration) <span class="cov0" title="0">{
+        if l.debugMode </span><span class="cov0" title="0">{
+                fields := map[string]interface{}{
+                        "wait_time_ms": waitTime.Milliseconds(),
+                }
+                l.Debug("Rate Limit Applied", fields)
+        }</span>
+}
+
+// LogZoneInfo logs zone information
+func (l *Logger) LogZoneInfo(zoneInfo *autotask.ZoneInfo) <span class="cov0" title="0">{
+        if l.debugMode </span><span class="cov0" title="0">{
+                fields := map[string]interface{}{
+                        "zone_name": zoneInfo.ZoneName,
+                        "url":       zoneInfo.URL,
+                        "web_url":   zoneInfo.WebURL,
+                        "ci":        zoneInfo.CI,
+                }
+                l.Debug("Zone Information", fields)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package telemetry
+
+import (
+        "context"
+        "fmt"
+        "time"
+
+        "go.opentelemetry.io/otel"
+        "go.opentelemetry.io/otel/attribute"
+        "go.opentelemetry.io/otel/codes"
+        "go.opentelemetry.io/otel/metric"
+        "go.opentelemetry.io/otel/trace"
+)
+
+// Telemetry handles OpenTelemetry integration
+type Telemetry struct {
+        tracer  trace.Tracer
+        meter   metric.Meter
+        enabled bool
+}
+
+// New creates a new telemetry instance
+func New(enabled bool) *Telemetry <span class="cov0" title="0">{
+        if !enabled </span><span class="cov0" title="0">{
+                return &amp;Telemetry{enabled: false}
+        }</span>
+
+        <span class="cov0" title="0">tracer := otel.Tracer("autotask-go")
+        meter := otel.Meter("autotask-go")
+
+        return &amp;Telemetry{
+                tracer:  tracer,
+                meter:   meter,
+                enabled: true,
+        }</span>
+}
+
+// StartRequestSpan starts a new span for an API request
+func (t *Telemetry) StartRequestSpan(ctx context.Context, method, url string) (context.Context, trace.Span) <span class="cov0" title="0">{
+        if !t.enabled </span><span class="cov0" title="0">{
+                return ctx, nil
+        }</span>
+
+        <span class="cov0" title="0">ctx, span := t.tracer.Start(ctx, fmt.Sprintf("autotask.%s", method))
+        span.SetAttributes(
+                attribute.String("http.method", method),
+                attribute.String("http.url", url),
+        )
+
+        return ctx, span</span>
+}
+
+// EndRequestSpan ends a span and records metrics
+func (t *Telemetry) EndRequestSpan(ctx context.Context, span trace.Span, method string, statusCode int, err error) <span class="cov0" title="0">{
+        if !t.enabled </span><span class="cov0" title="0">{
+                return
+        }</span>
+
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                span.SetStatus(codes.Error, err.Error())
+                span.RecordError(err)
+        }</span> else<span class="cov0" title="0"> if statusCode &gt;= 200 &amp;&amp; statusCode &lt; 300 </span><span class="cov0" title="0">{
+                span.SetStatus(codes.Ok, "success")
+        }</span> else<span class="cov0" title="0"> {
+                span.SetStatus(codes.Error, fmt.Sprintf("HTTP %d", statusCode))
+        }</span>
+
+        <span class="cov0" title="0">span.SetAttributes(attribute.Int("http.status_code", statusCode))
+        span.End()
+
+        // Record metrics
+        t.recordMetrics(ctx, method, statusCode, err)</span>
+}
+
+// recordMetrics records request metrics
+func (t *Telemetry) recordMetrics(ctx context.Context, method string, statusCode int, err error) <span class="cov0" title="0">{
+        // Record request count
+        requestCounter, _ := t.meter.Int64Counter(
+                "autotask.requests",
+                metric.WithDescription("Number of API requests"),
+        )
+        requestCounter.Add(ctx, 1, metric.WithAttributes(
+                attribute.String("method", method),
+                attribute.Int("status_code", statusCode),
+                attribute.Bool("error", err != nil),
+        ))
+
+        // Record request duration
+        durationHistogram, _ := t.meter.Float64Histogram(
+                "autotask.request_duration",
+                metric.WithDescription("Request duration in milliseconds"),
+        )
+        if span := trace.SpanFromContext(ctx); span != nil </span><span class="cov0" title="0">{
+                // Use current time since we can't reliably get span start time
+                duration := time.Since(time.Now()).Milliseconds()
+                durationHistogram.Record(ctx, float64(duration), metric.WithAttributes(
+                        attribute.String("method", method),
+                        attribute.Int("status_code", statusCode),
+                ))
+        }</span>
+}
+
+// StartBatchSpan starts a new span for a batch operation
+func (t *Telemetry) StartBatchSpan(ctx context.Context, operation string, count int) (context.Context, trace.Span) <span class="cov0" title="0">{
+        if !t.enabled </span><span class="cov0" title="0">{
+                return ctx, nil
+        }</span>
+
+        <span class="cov0" title="0">ctx, span := t.tracer.Start(ctx, fmt.Sprintf("autotask.batch.%s", operation))
+        span.SetAttributes(
+                attribute.String("operation", operation),
+                attribute.Int("count", count),
+        )
+
+        return ctx, span</span>
+}
+
+// RecordRateLimit records rate limiting metrics
+func (t *Telemetry) RecordRateLimit(ctx context.Context, waitTime time.Duration) <span class="cov0" title="0">{
+        if !t.enabled </span><span class="cov0" title="0">{
+                return
+        }</span>
+
+        <span class="cov0" title="0">rateLimitCounter, _ := t.meter.Int64Counter(
+                "autotask.rate_limit",
+                metric.WithDescription("Number of rate limit events"),
+        )
+        rateLimitCounter.Add(ctx, 1)
+
+        rateLimitWaitHistogram, _ := t.meter.Float64Histogram(
+                "autotask.rate_limit_wait",
+                metric.WithDescription("Rate limit wait time in milliseconds"),
+        )
+        rateLimitWaitHistogram.Record(ctx, float64(waitTime.Milliseconds()))</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package autotask
+
+import (
+        "bytes"
+        "context"
+        "encoding/base64"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+        "net/url"
+        "os"
+        "strings"
+        "sync"
+        "time"
+)
+
+const (
+        // BaseZoneInfoURL is the URL to get zone information
+        BaseZoneInfoURL = "https://webservices.autotask.net/atservicesrest/v1.0/ZoneInformation"
+
+        // DefaultUserAgent is the default user agent for the client
+        DefaultUserAgent = "Autotask Go Client"
+
+        // APIVersion is the version of the Autotask API
+        APIVersion = "v1.0"
+)
+
+// client represents an Autotask API client
+type client struct {
+        // HTTP client used to communicate with the API
+        httpClient *http.Client
+
+        // Base URL for API requests
+        baseURL *url.URL
+
+        // User agent used when communicating with the Autotask API
+        UserAgent string
+
+        // API credentials
+        username        string
+        secret          string
+        integrationCode string
+
+        // Zone information
+        zoneInfo  *ZoneInfo
+        zoneMutex sync.Mutex
+
+        // Rate limiter
+        rateLimiter *RateLimiter
+
+        // Logger
+        logger *Logger
+
+        // Entity clients
+        companiesService          *companiesService
+        ticketsService            *ticketsService
+        contactsService           *contactsService
+        webhooksService           *webhookService
+        resourcesService          *resourcesService
+        projectsService           *projectsService
+        tasksService              *tasksService
+        timeEntriesService        *timeEntriesService
+        contractsService          *contractsService
+        configurationItemsService *configurationItemsService
+}
+
+// NewClient returns a new Autotask API client
+func NewClient(username, secret, integrationCode string) Client <span class="cov8" title="1">{
+        httpClient := &amp;http.Client{
+                Timeout: time.Second * 60,
+        }
+
+        c := &amp;client{
+                httpClient:      httpClient,
+                UserAgent:       DefaultUserAgent,
+                username:        username,
+                secret:          secret,
+                integrationCode: integrationCode,
+                rateLimiter:     NewRateLimiter(60),       // Default to 60 requests per minute
+                logger:          New(LogLevelInfo, false), // Default to info level, debug off
+        }
+
+        // Initialize services
+        c.companiesService = &amp;companiesService{
+                BaseEntityService: NewBaseEntityService(c, "Companies"),
+        }
+        c.ticketsService = &amp;ticketsService{
+                BaseEntityService: NewBaseEntityService(c, "Tickets"),
+        }
+        c.contactsService = &amp;contactsService{
+                BaseEntityService: NewBaseEntityService(c, "Contacts"),
+        }
+        c.webhooksService = &amp;webhookService{
+                BaseEntityService: NewBaseEntityService(c, "Webhooks"),
+        }
+        c.resourcesService = &amp;resourcesService{
+                BaseEntityService: NewBaseEntityService(c, "Resources"),
+        }
+        c.projectsService = &amp;projectsService{
+                BaseEntityService: NewBaseEntityService(c, "Projects"),
+        }
+        c.tasksService = &amp;tasksService{
+                BaseEntityService: NewBaseEntityService(c, "Tasks"),
+        }
+        c.timeEntriesService = &amp;timeEntriesService{
+                BaseEntityService: NewBaseEntityService(c, "TimeEntries"),
+        }
+        c.contractsService = &amp;contractsService{
+                BaseEntityService: NewBaseEntityService(c, "Contracts"),
+        }
+        c.configurationItemsService = &amp;configurationItemsService{
+                BaseEntityService: NewBaseEntityService(c, "ConfigurationItems"),
+        }
+
+        return c
+}</span>
+
+// SetLogLevel sets the logging level
+func (c *client) SetLogLevel(level LogLevel) <span class="cov8" title="1">{
+        c.logger.SetLevel(level)
+}</span>
+
+// SetDebugMode enables or disables debug logging
+func (c *client) SetDebugMode(debug bool) <span class="cov8" title="1">{
+        c.logger.SetDebugMode(debug)
+}</span>
+
+// SetLogOutput sets the output writer for the logger
+func (c *client) SetLogOutput(output *os.File) <span class="cov0" title="0">{
+        c.logger.SetOutput(output)
+}</span>
+
+// GetZoneInfo gets the zone information for the Autotask account
+func (c *client) GetZoneInfo() (*ZoneInfo, error) <span class="cov8" title="1">{
+        c.zoneMutex.Lock()
+        defer c.zoneMutex.Unlock()
+
+        if c.zoneInfo != nil </span><span class="cov8" title="1">{
+                return c.zoneInfo, nil
+        }</span>
+
+        // Build URL with user parameter
+        <span class="cov0" title="0">zoneURL := fmt.Sprintf("%s?user=%s", BaseZoneInfoURL, url.QueryEscape(c.username))
+        c.logger.Debug("Requesting zone info", map[string]interface{}{
+                "url": zoneURL,
+        })
+
+        req, err := http.NewRequest("GET", zoneURL, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Set headers
+        <span class="cov0" title="0">req.Header.Set("User-Agent", c.UserAgent)
+        req.Header.Set("Content-Type", "application/json")
+        req.Header.Set("Accept", "application/json")
+
+        // Set both Basic auth and API headers
+        auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", c.username, c.secret)))
+        req.Header.Set("Authorization", fmt.Sprintf("Basic %s", auth))
+        req.Header.Set("UserName", c.username)
+        req.Header.Set("Secret", c.secret)
+
+        // Set API integration code
+        req.Header.Set("ApiIntegrationCode", c.integrationCode)
+
+        // Log request headers
+        headers := make(map[string]string)
+        for key, values := range req.Header </span><span class="cov0" title="0">{
+                headers[key] = values[0]
+        }</span>
+        <span class="cov0" title="0">c.logger.LogRequest(req.Method, req.URL.String(), headers)
+
+        resp, err := c.httpClient.Do(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">defer resp.Body.Close()
+
+        // Log response headers
+        respHeaders := make(map[string]string)
+        for key, values := range resp.Header </span><span class="cov0" title="0">{
+                respHeaders[key] = values[0]
+        }</span>
+        <span class="cov0" title="0">c.logger.LogResponse(resp.StatusCode, respHeaders)
+
+        if resp.StatusCode != http.StatusOK </span><span class="cov0" title="0">{
+                return nil, c.handleErrorResponse(resp)
+        }</span>
+
+        // Read and print response body for debugging
+        <span class="cov0" title="0">body, err := io.ReadAll(resp.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">c.logger.Debug("Zone info response", map[string]interface{}{
+                "body": string(body),
+        })
+
+        // Create a new reader with the same body for json.Decoder
+        bodyReader := bytes.NewReader(body)
+
+        var zoneInfo ZoneInfo
+        if err := json.NewDecoder(bodyReader).Decode(&amp;zoneInfo); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">c.logger.Debug("Parsed zone info", map[string]interface{}{
+                "zone_info": zoneInfo,
+        })
+
+        c.zoneInfo = &amp;zoneInfo
+        // Add API version to base URL, ensuring lowercase
+        baseURL := strings.Replace(zoneInfo.URL, "ATServicesRest", "atservicesrest", 1)
+        baseURL = fmt.Sprintf("%sv1.0/", baseURL)
+        c.logger.Debug("Using base URL", map[string]interface{}{
+                "base_url": baseURL,
+        })
+        c.baseURL, err = url.Parse(baseURL)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return c.zoneInfo, nil</span>
+}
+
+// NewRequest creates an API request with context
+func (c *client) NewRequest(ctx context.Context, method, urlStr string, body interface{}) (*http.Request, error) <span class="cov8" title="1">{
+        // Get zone info if not already set
+        if c.baseURL == nil </span><span class="cov0" title="0">{
+                if _, err := c.GetZoneInfo(); err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+
+        // Resolve relative URL
+        <span class="cov8" title="1">rel, err := url.Parse(urlStr)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">u := c.baseURL.ResolveReference(rel)
+
+        var buf io.ReadWriter
+        if body != nil </span><span class="cov8" title="1">{
+                buf = new(bytes.Buffer)
+                err := json.NewEncoder(buf).Encode(body)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+
+        <span class="cov8" title="1">req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Set headers
+        <span class="cov8" title="1">req.Header.Set("User-Agent", c.UserAgent)
+        req.Header.Set("Content-Type", "application/json")
+        req.Header.Set("Accept", "application/json")
+
+        // Set both Basic auth and API headers
+        auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", c.username, c.secret)))
+        req.Header.Set("Authorization", fmt.Sprintf("Basic %s", auth))
+        req.Header.Set("UserName", c.username)
+        req.Header.Set("Secret", c.secret)
+
+        // Set API integration code
+        req.Header.Set("ApiIntegrationCode", c.integrationCode)
+
+        // Log request headers
+        headers := make(map[string]string)
+        for key, values := range req.Header </span><span class="cov8" title="1">{
+                headers[key] = values[0]
+        }</span>
+        <span class="cov8" title="1">c.logger.LogRequest(req.Method, req.URL.String(), headers)
+
+        return req, nil</span>
+}
+
+// Do sends an API request and returns the API response
+func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) <span class="cov8" title="1">{
+        // Apply rate limiting
+        c.rateLimiter.Wait()
+
+        resp, err := c.httpClient.Do(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">defer resp.Body.Close()
+
+        // Log response headers
+        respHeaders := make(map[string]string)
+        for key, values := range resp.Header </span><span class="cov8" title="1">{
+                respHeaders[key] = values[0]
+        }</span>
+        <span class="cov8" title="1">c.logger.LogResponse(resp.StatusCode, respHeaders)
+
+        // Handle successful responses
+        if resp.StatusCode == http.StatusNoContent </span><span class="cov8" title="1">{
+                // For 204 No Content responses, there's no body to parse
+                return resp, nil
+        }</span>
+
+        <span class="cov8" title="1">if resp.StatusCode != http.StatusOK &amp;&amp; resp.StatusCode != http.StatusCreated </span><span class="cov8" title="1">{
+                return nil, c.handleErrorResponse(resp)
+        }</span>
+
+        // Read the response body
+        <span class="cov8" title="1">body, err := io.ReadAll(resp.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to read response body: %w", err)
+        }</span>
+
+        // Log the response body for debugging
+        <span class="cov8" title="1">c.logger.Debug("Response body", map[string]interface{}{
+                "body": string(body),
+        })
+
+        // If v is nil, we don't need to parse the response
+        if v == nil </span><span class="cov8" title="1">{
+                return resp, nil
+        }</span>
+
+        // If v is a pointer to []byte, store the raw body
+        <span class="cov8" title="1">if b, ok := v.(*[]byte); ok </span><span class="cov8" title="1">{
+                *b = body
+                return resp, nil
+        }</span>
+
+        // Otherwise, unmarshal the JSON
+        <span class="cov8" title="1">if err := json.Unmarshal(body, v); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return resp, nil</span>
+}
+
+// handleErrorResponse handles error responses from the API
+func (c *client) handleErrorResponse(resp *http.Response) error <span class="cov8" title="1">{
+        var errorResp ErrorResponse
+        errorResp.Response = resp
+        data, err := io.ReadAll(resp.Body)
+        if err == nil &amp;&amp; data != nil </span><span class="cov8" title="1">{
+                if unmarshalErr := json.Unmarshal(data, &amp;errorResp); unmarshalErr != nil </span><span class="cov0" title="0">{
+                        // If we can't unmarshal the error response, just log it and continue
+                        // We'll still return the error response with the status code
+                        c.logger.LogError(unmarshalErr)
+                }</span>
+        }
+        <span class="cov8" title="1">return &amp;errorResp</span>
+}
+
+// Companies returns the companies service
+func (c *client) Companies() CompaniesService <span class="cov8" title="1">{
+        return c.companiesService
+}</span>
+
+// Tickets returns the tickets service
+func (c *client) Tickets() TicketsService <span class="cov8" title="1">{
+        return c.ticketsService
+}</span>
+
+// Contacts returns the contacts service
+func (c *client) Contacts() ContactsService <span class="cov8" title="1">{
+        return c.contactsService
+}</span>
+
+// Webhooks returns the webhooks service
+func (c *client) Webhooks() WebhookService <span class="cov8" title="1">{
+        return c.webhooksService
+}</span>
+
+// Resources returns the resources service
+func (c *client) Resources() ResourcesService <span class="cov8" title="1">{
+        return c.resourcesService
+}</span>
+
+// Projects returns the projects service
+func (c *client) Projects() ProjectsService <span class="cov8" title="1">{
+        return c.projectsService
+}</span>
+
+// Tasks returns the tasks service
+func (c *client) Tasks() TasksService <span class="cov8" title="1">{
+        return c.tasksService
+}</span>
+
+// TimeEntries returns the time entries service
+func (c *client) TimeEntries() TimeEntriesService <span class="cov8" title="1">{
+        return c.timeEntriesService
+}</span>
+
+// Contracts returns the contracts service
+func (c *client) Contracts() ContractsService <span class="cov8" title="1">{
+        return c.contractsService
+}</span>
+
+// ConfigurationItems returns the configuration items service
+func (c *client) ConfigurationItems() ConfigurationItemsService <span class="cov8" title="1">{
+        return c.configurationItemsService
+}</span>
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package autotask
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "net/http"
+        "time"
+)
+
+// Response represents a generic response from the Autotask API.
+type Response struct {
+        Item interface{} `json:"item"`
+}
+
+// ListResponse represents a generic list response from the Autotask API.
+type ListResponse struct {
+        Items       []interface{} `json:"items"`
+        PageDetails PageDetails   `json:"pageDetails,omitempty"`
+}
+
+// BaseEntityService is a base service that provides common functionality for all entity services.
+type BaseEntityService struct {
+        Client     Client
+        EntityName string
+}
+
+// NewBaseEntityService creates a new base entity service
+func NewBaseEntityService(client Client, entityName string) BaseEntityService <span class="cov8" title="1">{
+        return BaseEntityService{
+                Client:     client,
+                EntityName: entityName,
+        }
+}</span>
+
+// Get gets an entity by ID.
+func (s *BaseEntityService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov8" title="1">{
+        url := fmt.Sprintf("%s/%d", s.EntityName, id)
+        req, err := s.Client.NewRequest(ctx, http.MethodGet, url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">var result Response
+        _, err = s.Client.Do(req, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return result.Item, nil</span>
+}
+
+// Query queries entities with a filter.
+func (s *BaseEntityService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov8" title="1">{
+        // Parse the filter string into a query filter or filter group
+        var queryFilter interface{}
+
+        if filter != "" </span><span class="cov8" title="1">{
+                // Use the new ParseFilterString function to handle complex filters
+                queryFilter = ParseFilterString(filter)
+        }</span> else<span class="cov8" title="1"> {
+                // Default filter for active items
+                switch s.EntityName </span>{
+                case "Companies":<span class="cov8" title="1">
+                        queryFilter = NewQueryFilter("IsActive", OperatorEquals, true)</span>
+                case "Tickets":<span class="cov0" title="0">
+                        queryFilter = NewQueryFilter("Status", OperatorNotEquals, 5)</span> // 5 is typically "Completed"
+                case "Resources":<span class="cov0" title="0">
+                        queryFilter = NewQueryFilter("IsActive", OperatorEquals, true)</span>
+                case "Projects":<span class="cov8" title="1">
+                        queryFilter = NewQueryFilter("Status", OperatorNotEquals, 5)</span> // 5 is typically "Completed"
+                case "Tasks":<span class="cov0" title="0">
+                        queryFilter = NewQueryFilter("Status", OperatorNotEquals, 5)</span> // 5 is typically "Completed"
+                case "TimeEntries":<span class="cov0" title="0">
+                        // Default to entries from the last 30 days
+                        thirtyDaysAgo := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
+                        queryFilter = NewQueryFilter("DateWorked", OperatorGreaterOrEqual, thirtyDaysAgo)</span>
+                case "Contracts":<span class="cov0" title="0">
+                        queryFilter = NewQueryFilter("Status", OperatorEquals, 1)</span> // 1 is typically "Active"
+                case "ConfigurationItems":<span class="cov0" title="0">
+                        queryFilter = NewQueryFilter("Active", OperatorEquals, true)</span>
+                }
+        }
+
+        // Create query parameters using the enhanced type
+        <span class="cov8" title="1">params := NewEntityQueryParams(queryFilter).WithMaxRecords(500)
+
+        // Use the correct endpoint structure according to the API docs
+        url := s.EntityName + "/query"
+
+        // Convert params to JSON string for URL parameter
+        searchJSON, err := json.Marshal(params)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to marshal search params: %w", err)
+        }</span>
+
+        // Add search parameter to URL
+        <span class="cov8" title="1">url = fmt.Sprintf("%s?search=%s", url, string(searchJSON))
+
+        req, err := s.Client.NewRequest(ctx, http.MethodGet, url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // Get the raw response body
+        <span class="cov8" title="1">var respBody []byte
+        _, err = s.Client.Do(req, &amp;respBody)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("query failed: %w", err)
+        }</span>
+
+        // Unmarshal the response into the result
+        <span class="cov8" title="1">if err := json.Unmarshal(respBody, result); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to unmarshal response: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Create creates a new entity.
+func (s *BaseEntityService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov8" title="1">{
+        url := s.EntityName
+        req, err := s.Client.NewRequest(ctx, http.MethodPost, url, entity)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">var result Response
+        _, err = s.Client.Do(req, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return result.Item, nil</span>
+}
+
+// Update updates an existing entity.
+func (s *BaseEntityService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov8" title="1">{
+        url := fmt.Sprintf("%s/%d", s.EntityName, id)
+        req, err := s.Client.NewRequest(ctx, http.MethodPatch, url, entity)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">var result Response
+        _, err = s.Client.Do(req, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return result.Item, nil</span>
+}
+
+// Delete deletes an entity by ID.
+func (s *BaseEntityService) Delete(ctx context.Context, id int64) error <span class="cov8" title="1">{
+        url := fmt.Sprintf("%s/%d", s.EntityName, id)
+        req, err := s.Client.NewRequest(ctx, http.MethodDelete, url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">_, err = s.Client.Do(req, nil)
+        return err</span>
+}
+
+// Count counts entities matching a filter.
+func (s *BaseEntityService) Count(ctx context.Context, filter string) (int, error) <span class="cov8" title="1">{
+        // Convert the filter string to the required JSON format
+        var fieldName string
+        switch s.EntityName </span>{
+        case "Companies":<span class="cov8" title="1">
+                fieldName = "IsActive"</span>
+        case "Tickets":<span class="cov0" title="0">
+                fieldName = "Status"</span>
+        case "Resources":<span class="cov0" title="0">
+                fieldName = "IsActive"</span>
+        default:<span class="cov8" title="1">
+                fieldName = filter</span>
+        }
+
+        <span class="cov8" title="1">filterObj := NewQueryFilter(fieldName, OperatorEquals, true)
+
+        // Create query parameters using the existing type
+        params := NewEntityQueryParams(filterObj)
+
+        // Use the correct endpoint structure according to the API docs
+        url := s.EntityName + "/query/count"
+
+        // Convert params to JSON string for URL parameter
+        searchJSON, err := json.Marshal(params)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, fmt.Errorf("failed to marshal search params: %w", err)
+        }</span>
+
+        // Add search parameter to URL
+        <span class="cov8" title="1">url = fmt.Sprintf("%s?search=%s", url, string(searchJSON))
+
+        req, err := s.Client.NewRequest(ctx, http.MethodGet, url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+
+        <span class="cov8" title="1">var count struct {
+                Count int `json:"count"`
+        }
+        _, err = s.Client.Do(req, &amp;count)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, err
+        }</span>
+
+        <span class="cov8" title="1">return count.Count, nil</span>
+}
+
+// Pagination handles paginated results.
+func (s *BaseEntityService) Pagination(ctx context.Context, url string, result interface{}) error <span class="cov0" title="0">{
+        req, err := s.Client.NewRequest(ctx, http.MethodGet, url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">_, err = s.Client.Do(req, result)
+        return err</span>
+}
+
+// BatchCreate creates multiple entities in a single request.
+func (s *BaseEntityService) BatchCreate(ctx context.Context, entities []interface{}, result interface{}) error <span class="cov0" title="0">{
+        url := s.EntityName + "/batch"
+        req, err := s.Client.NewRequest(ctx, http.MethodPost, url, entities)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">_, err = s.Client.Do(req, result)
+        return err</span>
+}
+
+// BatchUpdate updates multiple entities in a single request.
+func (s *BaseEntityService) BatchUpdate(ctx context.Context, entities []interface{}, result interface{}) error <span class="cov0" title="0">{
+        url := s.EntityName + "/batch"
+        req, err := s.Client.NewRequest(ctx, http.MethodPatch, url, entities)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">_, err = s.Client.Do(req, result)
+        return err</span>
+}
+
+// BatchDelete deletes multiple entities in a single request.
+func (s *BaseEntityService) BatchDelete(ctx context.Context, ids []int64) error <span class="cov0" title="0">{
+        url := s.EntityName + "/batch"
+        req, err := s.Client.NewRequest(ctx, http.MethodDelete, url, ids)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">_, err = s.Client.Do(req, nil)
+        return err</span>
+}
+
+// GetNextPage gets the next page of results
+func (s *BaseEntityService) GetNextPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error) <span class="cov0" title="0">{
+        var result ListResponse
+        err := s.Pagination(ctx, pageDetails.NextPageUrl, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return result.Items, nil</span>
+}
+
+// GetPreviousPage gets the previous page of results
+func (s *BaseEntityService) GetPreviousPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error) <span class="cov0" title="0">{
+        if pageDetails.PrevPageUrl == "" </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("no previous page available")
+        }</span>
+
+        <span class="cov0" title="0">var result ListResponse
+        err := s.Pagination(ctx, pageDetails.PrevPageUrl, &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return result.Items, nil</span>
+}
+
+// GetEntityName returns the name of the entity
+func (s *BaseEntityService) GetEntityName() string <span class="cov8" title="1">{
+        return s.EntityName
+}</span>
+
+// GetClient returns the client used by the service
+func (s *BaseEntityService) GetClient() Client <span class="cov8" title="1">{
+        return s.Client
+}</span>
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package autotask
+
+import (
+        "fmt"
+        "io"
+        "os"
+        "time"
+)
+
+// Logger handles logging for the Autotask client
+type Logger struct {
+        level      LogLevel
+        debugMode  bool
+        output     io.Writer
+        timeFormat string
+}
+
+// New creates a new logger
+func New(level LogLevel, debugMode bool) *Logger <span class="cov8" title="1">{
+        return &amp;Logger{
+                level:      level,
+                debugMode:  debugMode,
+                output:     os.Stdout,
+                timeFormat: time.RFC3339,
+        }
+}</span>
+
+// SetLevel sets the logging level
+func (l *Logger) SetLevel(level LogLevel) <span class="cov8" title="1">{
+        l.level = level
+}</span>
+
+// SetDebugMode enables or disables debug logging
+func (l *Logger) SetDebugMode(debug bool) <span class="cov8" title="1">{
+        l.debugMode = debug
+}</span>
+
+// SetOutput sets the output writer for the logger
+func (l *Logger) SetOutput(output io.Writer) <span class="cov8" title="1">{
+        l.output = output
+}</span>
+
+// Debug logs a debug message
+func (l *Logger) Debug(msg string, fields map[string]interface{}) <span class="cov8" title="1">{
+        if !l.debugMode </span><span class="cov8" title="1">{
+                return
+        }</span>
+        <span class="cov8" title="1">l.log(LogLevelDebug, msg, fields)</span>
+}
+
+// Info logs an info message
+func (l *Logger) Info(msg string, fields map[string]interface{}) <span class="cov8" title="1">{
+        if l.level &gt; LogLevelInfo </span><span class="cov8" title="1">{
+                return
+        }</span>
+        <span class="cov8" title="1">l.log(LogLevelInfo, msg, fields)</span>
+}
+
+// Warn logs a warning message
+func (l *Logger) Warn(msg string, fields map[string]interface{}) <span class="cov8" title="1">{
+        if l.level &gt; LogLevelWarn </span><span class="cov8" title="1">{
+                return
+        }</span>
+        <span class="cov8" title="1">l.log(LogLevelWarn, msg, fields)</span>
+}
+
+// Error logs an error message
+func (l *Logger) Error(msg string, fields map[string]interface{}) <span class="cov8" title="1">{
+        if l.level &gt; LogLevelError </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov8" title="1">l.log(LogLevelError, msg, fields)</span>
+}
+
+// LogRequest logs an HTTP request
+func (l *Logger) LogRequest(method, url string, headers map[string]string) <span class="cov8" title="1">{
+        if !l.debugMode </span><span class="cov8" title="1">{
+                return
+        }</span>
+        <span class="cov8" title="1">fields := map[string]interface{}{
+                "method":  method,
+                "url":     url,
+                "headers": headers,
+        }
+        l.log(LogLevelDebug, "HTTP Request", fields)</span>
+}
+
+// LogResponse logs an HTTP response
+func (l *Logger) LogResponse(statusCode int, headers map[string]string) <span class="cov8" title="1">{
+        if !l.debugMode </span><span class="cov8" title="1">{
+                return
+        }</span>
+        <span class="cov8" title="1">fields := map[string]interface{}{
+                "status_code": statusCode,
+                "headers":     headers,
+        }
+        l.log(LogLevelDebug, "HTTP Response", fields)</span>
+}
+
+// LogError logs an error
+func (l *Logger) LogError(err error) <span class="cov8" title="1">{
+        if err == nil </span><span class="cov8" title="1">{
+                return
+        }</span>
+        <span class="cov8" title="1">fields := map[string]interface{}{
+                "error": err.Error(),
+        }
+        l.log(LogLevelError, "Error", fields)</span>
+}
+
+func (l *Logger) log(level LogLevel, msg string, fields map[string]interface{}) <span class="cov8" title="1">{
+        timestamp := time.Now().Format(l.timeFormat)
+        levelStr := l.getLevelString(level)
+
+        // Build the log message
+        logMsg := fmt.Sprintf("[%s] %s: %s", timestamp, levelStr, msg)
+        if len(fields) &gt; 0 </span><span class="cov8" title="1">{
+                logMsg += fmt.Sprintf(" %v", fields)
+        }</span>
+
+        // Write to output
+        <span class="cov8" title="1">fmt.Fprintln(l.output, logMsg)</span>
+}
+
+func (l *Logger) getLevelString(level LogLevel) string <span class="cov8" title="1">{
+        switch level </span>{
+        case LogLevelDebug:<span class="cov8" title="1">
+                return "DEBUG"</span>
+        case LogLevelInfo:<span class="cov8" title="1">
+                return "INFO"</span>
+        case LogLevelWarn:<span class="cov8" title="1">
+                return "WARN"</span>
+        case LogLevelError:<span class="cov8" title="1">
+                return "ERROR"</span>
+        default:<span class="cov8" title="1">
+                return "UNKNOWN"</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package autotask
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "net/http"
+        neturl "net/url"
+)
+
+// PaginationIterator provides an iterator pattern for paginated results
+type PaginationIterator struct {
+        service      EntityService
+        filter       string
+        currentPage  int
+        pageSize     int
+        totalCount   int
+        hasMore      bool
+        nextPageUrl  string
+        prevPageUrl  string
+        items        []interface{}
+        currentIndex int
+        ctx          context.Context
+}
+
+// NewPaginationIterator creates a new pagination iterator
+func NewPaginationIterator(ctx context.Context, service EntityService, filter string, pageSize int) (*PaginationIterator, error) <span class="cov8" title="1">{
+        iterator := &amp;PaginationIterator{
+                service:      service,
+                filter:       filter,
+                currentPage:  1,
+                pageSize:     pageSize,
+                currentIndex: -1,
+                ctx:          ctx,
+        }
+
+        // Load the first page
+        err := iterator.loadNextPage()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return iterator, nil</span>
+}
+
+// Next advances the iterator to the next item
+// Returns false when there are no more items
+func (p *PaginationIterator) Next() bool <span class="cov8" title="1">{
+        p.currentIndex++
+
+        // If we've reached the end of the current page and there are more pages
+        if p.currentIndex &gt;= len(p.items) &amp;&amp; p.hasMore </span><span class="cov8" title="1">{
+                err := p.loadNextPage()
+                if err != nil </span><span class="cov0" title="0">{
+                        return false
+                }</span>
+                <span class="cov8" title="1">p.currentIndex = 0</span>
+        }
+
+        <span class="cov8" title="1">return p.currentIndex &lt; len(p.items)</span>
+}
+
+// Item returns the current item
+func (p *PaginationIterator) Item() interface{} <span class="cov8" title="1">{
+        if p.currentIndex &lt; 0 || p.currentIndex &gt;= len(p.items) </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov8" title="1">return p.items[p.currentIndex]</span>
+}
+
+// Error returns any error that occurred during iteration
+func (p *PaginationIterator) Error() error <span class="cov8" title="1">{
+        return nil
+}</span>
+
+// TotalCount returns the total number of items across all pages
+func (p *PaginationIterator) TotalCount() int <span class="cov0" title="0">{
+        return p.totalCount
+}</span>
+
+// CurrentPage returns the current page number
+func (p *PaginationIterator) CurrentPage() int <span class="cov0" title="0">{
+        return p.currentPage
+}</span>
+
+// loadNextPage loads the next page of results
+func (p *PaginationIterator) loadNextPage() error <span class="cov8" title="1">{
+        var urlPath string
+        var req *http.Request
+        var err error
+
+        // Create a response structure
+        var response struct {
+                Items       []interface{} `json:"items"`
+                PageDetails PageDetails   `json:"pageDetails"`
+        }
+
+        // If this is the first page, use the regular query endpoint
+        if p.currentPage == 1 </span><span class="cov8" title="1">{
+                // Parse the filter string
+                var queryFilter interface{}
+                if p.filter != "" </span><span class="cov8" title="1">{
+                        queryFilter = ParseFilterString(p.filter)
+                }</span>
+
+                // Create query parameters
+                <span class="cov8" title="1">params := NewEntityQueryParams(queryFilter).
+                        WithMaxRecords(p.pageSize)
+
+                // Use the correct endpoint structure according to the API docs
+                urlPath = p.service.GetEntityName() + "/query"
+
+                // Convert params to JSON string for URL parameter
+                searchJSON, err := json.Marshal(params)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to marshal search params: %w", err)
+                }</span>
+
+                // Add search parameter to URL
+                <span class="cov8" title="1">searchJSONStr := string(searchJSON)
+                escapedJSON := neturl.QueryEscape(searchJSONStr)
+                urlPath = fmt.Sprintf("%s?search=%s", urlPath, escapedJSON)
+
+                req, err = p.service.GetClient().NewRequest(p.ctx, http.MethodGet, urlPath, nil)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to create request: %w", err)
+                }</span>
+        } else<span class="cov8" title="1"> if p.nextPageUrl != "" </span><span class="cov8" title="1">{
+                // For subsequent pages, use the nextPageUrl from the previous response
+                // The nextPageUrl already contains all necessary parameters
+                req, err = p.service.GetClient().NewRequest(p.ctx, http.MethodGet, p.nextPageUrl, nil)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to create request for next page: %w", err)
+                }</span>
+        } else<span class="cov0" title="0"> {
+                // No more pages
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">_, err = p.service.GetClient().Do(req, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("query failed: %w", err)
+        }</span>
+
+        // Ensure the page number is correctly set
+        // The API might not always return the correct page number
+        <span class="cov8" title="1">response.PageDetails.PageNumber = p.currentPage
+
+        // Update the iterator state
+        p.items = response.Items
+        p.totalCount = response.PageDetails.Count
+        p.nextPageUrl = response.PageDetails.NextPageUrl
+        p.prevPageUrl = response.PageDetails.PrevPageUrl
+        p.hasMore = response.PageDetails.NextPageUrl != "" &amp;&amp; len(response.Items) &gt; 0
+        p.currentPage++
+
+        return nil</span>
+}
+
+// PaginatedResults is a generic structure for paginated results
+type PaginatedResults[T any] struct {
+        Items       []T         `json:"items"`
+        PageDetails PageDetails `json:"pageDetails"`
+}
+
+// PaginationOptions contains options for pagination
+type PaginationOptions struct {
+        PageSize int
+        Page     int
+}
+
+// DefaultPaginationOptions returns default pagination options
+func DefaultPaginationOptions() PaginationOptions <span class="cov8" title="1">{
+        return PaginationOptions{
+                PageSize: 100,
+                Page:     1,
+        }
+}</span>
+
+// FetchAllPages is a convenience method to fetch all pages of results
+// This is useful when you need all results and don't want to manually handle pagination
+func FetchAllPages[T any](ctx context.Context, service EntityService, filter string) ([]T, error) <span class="cov8" title="1">{
+        var allItems []T
+        var nextPageUrl string
+        var pageSize int = 100 // Default page size
+
+        // First page
+        var response struct {
+                Items       []T         `json:"items"`
+                PageDetails PageDetails `json:"pageDetails"`
+        }
+
+        // Parse the filter string
+        var queryFilter interface{}
+        if filter != "" </span><span class="cov8" title="1">{
+                queryFilter = ParseFilterString(filter)
+        }</span>
+
+        // Create query parameters
+        <span class="cov8" title="1">params := NewEntityQueryParams(queryFilter).
+                WithMaxRecords(pageSize)
+
+        // Use the correct endpoint structure according to the API docs
+        urlPath := service.GetEntityName() + "/query"
+
+        // Convert params to JSON string for URL parameter
+        searchJSON, err := json.Marshal(params)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to marshal search params: %w", err)
+        }</span>
+
+        // Add search parameter to URL
+        <span class="cov8" title="1">searchJSONStr := string(searchJSON)
+        escapedJSON := neturl.QueryEscape(searchJSONStr)
+        urlPath = fmt.Sprintf("%s?search=%s", urlPath, escapedJSON)
+
+        req, err := service.GetClient().NewRequest(ctx, http.MethodGet, urlPath, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create request: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">_, err = service.GetClient().Do(req, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("query failed: %w", err)
+        }</span>
+
+        // Add items to the result
+        <span class="cov8" title="1">allItems = append(allItems, response.Items...)
+        nextPageUrl = response.PageDetails.NextPageUrl
+
+        // Fetch subsequent pages using the nextPageUrl
+        for nextPageUrl != "" &amp;&amp; len(response.Items) &gt; 0 </span><span class="cov0" title="0">{
+                req, err := service.GetClient().NewRequest(ctx, http.MethodGet, nextPageUrl, nil)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to create request for next page: %w", err)
+                }</span>
+
+                <span class="cov0" title="0">_, err = service.GetClient().Do(req, &amp;response)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("query failed: %w", err)
+                }</span>
+
+                // Add items to the result
+                <span class="cov0" title="0">allItems = append(allItems, response.Items...)
+                nextPageUrl = response.PageDetails.NextPageUrl</span>
+        }
+
+        <span class="cov8" title="1">return allItems, nil</span>
+}
+
+// FetchAllPagesWithCallback is a convenience method to fetch all pages of results
+// and process each page with a callback function
+// This is useful for processing large result sets without keeping all items in memory
+func FetchAllPagesWithCallback[T any](
+        ctx context.Context,
+        service EntityService,
+        filter string,
+        callback func(items []T, pageDetails PageDetails) error,
+) error <span class="cov8" title="1">{
+        var nextPageUrl string
+        var pageSize int = 100 // Default page size
+        var currentPage int = 1
+
+        // First page
+        var response struct {
+                Items       []T         `json:"items"`
+                PageDetails PageDetails `json:"pageDetails"`
+        }
+
+        // Parse the filter string
+        var queryFilter interface{}
+        if filter != "" </span><span class="cov8" title="1">{
+                queryFilter = ParseFilterString(filter)
+        }</span>
+
+        // Create query parameters
+        <span class="cov8" title="1">params := NewEntityQueryParams(queryFilter).
+                WithMaxRecords(pageSize)
+
+        // Use the correct endpoint structure according to the API docs
+        urlPath := service.GetEntityName() + "/query"
+
+        // Convert params to JSON string for URL parameter
+        searchJSON, err := json.Marshal(params)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to marshal search params: %w", err)
+        }</span>
+
+        // Add search parameter to URL
+        <span class="cov8" title="1">searchJSONStr := string(searchJSON)
+        escapedJSON := neturl.QueryEscape(searchJSONStr)
+        urlPath = fmt.Sprintf("%s?search=%s", urlPath, escapedJSON)
+
+        req, err := service.GetClient().NewRequest(ctx, http.MethodGet, urlPath, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to create request: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">_, err = service.GetClient().Do(req, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("query failed: %w", err)
+        }</span>
+
+        // Ensure the page number is correctly set
+        <span class="cov8" title="1">response.PageDetails.PageNumber = currentPage
+
+        // Process this page with the callback
+        err = callback(response.Items, response.PageDetails)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">nextPageUrl = response.PageDetails.NextPageUrl
+        currentPage++
+
+        // Fetch subsequent pages using the nextPageUrl
+        for nextPageUrl != "" &amp;&amp; len(response.Items) &gt; 0 </span><span class="cov0" title="0">{
+                req, err := service.GetClient().NewRequest(ctx, http.MethodGet, nextPageUrl, nil)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to create request for next page: %w", err)
+                }</span>
+
+                <span class="cov0" title="0">_, err = service.GetClient().Do(req, &amp;response)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("query failed: %w", err)
+                }</span>
+
+                // Ensure the page number is correctly set
+                <span class="cov0" title="0">response.PageDetails.PageNumber = currentPage
+
+                // Process this page with the callback
+                err = callback(response.Items, response.PageDetails)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov0" title="0">nextPageUrl = response.PageDetails.NextPageUrl
+                currentPage++</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// FetchPage is a convenience method to fetch a specific page of results
+// Note: According to Autotask API documentation, you should use the pagination URLs
+// provided in the response rather than manually constructing page requests.
+// This method is provided for convenience but may not work as expected for all cases.
+func FetchPage[T any](
+        ctx context.Context,
+        service EntityService,
+        filter string,
+        options PaginationOptions,
+) (*PaginatedResults[T], error) <span class="cov8" title="1">{
+        // Create a response structure
+        var response PaginatedResults[T]
+
+        // Parse the filter string
+        var queryFilter interface{}
+        if filter != "" </span><span class="cov8" title="1">{
+                queryFilter = ParseFilterString(filter)
+        }</span>
+
+        // Create query parameters
+        <span class="cov8" title="1">params := NewEntityQueryParams(queryFilter).
+                WithMaxRecords(options.PageSize).
+                WithPage(options.Page)
+
+        // Use the correct endpoint structure according to the API docs
+        urlPath := service.GetEntityName() + "/query"
+
+        // Convert params to JSON string for URL parameter
+        searchJSON, err := json.Marshal(params)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to marshal search params: %w", err)
+        }</span>
+
+        // Add search parameter to URL
+        <span class="cov8" title="1">searchJSONStr := string(searchJSON)
+        escapedJSON := neturl.QueryEscape(searchJSONStr)
+        urlPath = fmt.Sprintf("%s?search=%s", urlPath, escapedJSON)
+
+        req, err := service.GetClient().NewRequest(ctx, http.MethodGet, urlPath, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create request: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">_, err = service.GetClient().Do(req, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("query failed: %w", err)
+        }</span>
+
+        // Ensure the page number is correctly set
+        <span class="cov8" title="1">response.PageDetails.PageNumber = options.Page
+
+        // If options.Page &gt; 1, we need to follow the nextPageUrl to get to the requested page
+        nextPageUrl := response.PageDetails.NextPageUrl
+        currentPage := 1
+
+        for currentPage &lt; options.Page &amp;&amp; nextPageUrl != "" </span><span class="cov8" title="1">{
+                req, err := service.GetClient().NewRequest(ctx, http.MethodGet, nextPageUrl, nil)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to create request for page %d: %w", currentPage+1, err)
+                }</span>
+
+                <span class="cov8" title="1">_, err = service.GetClient().Do(req, &amp;response)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("query failed for page %d: %w", currentPage+1, err)
+                }</span>
+
+                <span class="cov8" title="1">currentPage++
+                nextPageUrl = response.PageDetails.NextPageUrl
+
+                // If we've reached the requested page, break
+                if currentPage &gt;= options.Page </span><span class="cov8" title="1">{
+                        break</span>
+                }
+
+                // If there are no more pages, break
+                <span class="cov0" title="0">if nextPageUrl == "" </span><span class="cov0" title="0">{
+                        break</span>
+                }
+        }
+
+        // Ensure the page number is correctly set
+        <span class="cov8" title="1">response.PageDetails.PageNumber = currentPage
+
+        return &amp;response, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package autotask
+
+import (
+        "encoding/json"
+        "fmt"
+        "strings"
+)
+
+// QueryOperator represents the type of query operation
+type QueryOperator string
+
+const (
+        OperatorEquals         QueryOperator = "eq"
+        OperatorNotEquals      QueryOperator = "noteq"
+        OperatorBeginsWith     QueryOperator = "beginsWith"
+        OperatorEndsWith       QueryOperator = "endsWith"
+        OperatorContains       QueryOperator = "contains"
+        OperatorNotContains    QueryOperator = "notContains"
+        OperatorGreaterThan    QueryOperator = "greaterThan"
+        OperatorLessThan       QueryOperator = "lessThan"
+        OperatorGreaterOrEqual QueryOperator = "greaterOrEqual"
+        OperatorLessOrEqual    QueryOperator = "lessOrEqual"
+        OperatorIn             QueryOperator = "in"
+        OperatorNotIn          QueryOperator = "notIn"
+        OperatorIsNull         QueryOperator = "isNull"
+        OperatorIsNotNull      QueryOperator = "isNotNull"
+)
+
+// LogicalOperator represents the type of logical operation (AND, OR)
+type LogicalOperator string
+
+const (
+        LogicalOperatorAnd LogicalOperator = "and"
+        LogicalOperatorOr  LogicalOperator = "or"
+)
+
+// QueryFilter represents a single filter condition
+type QueryFilter struct {
+        Field    string        `json:"field,omitempty"`
+        Operator QueryOperator `json:"op,omitempty"`
+        Value    interface{}   `json:"value,omitempty"`
+}
+
+// FilterGroup represents a group of filters with a logical operator
+type FilterGroup struct {
+        Operator LogicalOperator `json:"op"`
+        Items    []interface{}   `json:"items"` // Can contain QueryFilter or nested FilterGroup
+}
+
+// EntityQueryParams represents the parameters for a query request
+type EntityQueryParams struct {
+        Filter        []interface{} `json:"filter,omitempty"` // Array of QueryFilter or FilterGroup
+        Fields        []string      `json:"fields,omitempty"`
+        MaxRecords    int           `json:"maxRecords,omitempty"`
+        IncludeFields []string      `json:"includeFields,omitempty"`
+        ExcludeFields []string      `json:"excludeFields,omitempty"`
+        Page          int           `json:"page,omitempty"`
+}
+
+// BuildQueryString builds the query string for the request
+func (p *EntityQueryParams) BuildQueryString() string <span class="cov8" title="1">{
+        if p == nil </span><span class="cov0" title="0">{
+                return ""
+        }</span>
+
+        <span class="cov8" title="1">jsonBytes, err := json.Marshal(p)
+        if err != nil </span><span class="cov0" title="0">{
+                return ""
+        }</span>
+
+        <span class="cov8" title="1">return string(jsonBytes)</span>
+}
+
+// NewQueryFilter creates a new query filter with the given parameters
+func NewQueryFilter(field string, operator QueryOperator, value interface{}) QueryFilter <span class="cov8" title="1">{
+        return QueryFilter{
+                Field:    field,
+                Operator: operator,
+                Value:    value,
+        }
+}</span>
+
+// NewAndFilterGroup creates a new filter group with AND logic
+func NewAndFilterGroup(items ...interface{}) FilterGroup <span class="cov8" title="1">{
+        return FilterGroup{
+                Operator: LogicalOperatorAnd,
+                Items:    items,
+        }
+}</span>
+
+// NewOrFilterGroup creates a new filter group with OR logic
+func NewOrFilterGroup(items ...interface{}) FilterGroup <span class="cov8" title="1">{
+        return FilterGroup{
+                Operator: LogicalOperatorOr,
+                Items:    items,
+        }
+}</span>
+
+// NewEntityQueryParams creates a new query parameters object with the given filter
+func NewEntityQueryParams(filter interface{}) *EntityQueryParams <span class="cov8" title="1">{
+        params := &amp;EntityQueryParams{
+                Filter: make([]interface{}, 0),
+        }
+
+        if filter != nil </span><span class="cov8" title="1">{
+                params.Filter = append(params.Filter, filter)
+        }</span>
+
+        <span class="cov8" title="1">return params</span>
+}
+
+// WithFields adds field selection to the query parameters
+func (p *EntityQueryParams) WithFields(fields ...string) *EntityQueryParams <span class="cov8" title="1">{
+        p.Fields = fields
+        return p
+}</span>
+
+// WithIncludeFields adds fields to include in the response
+func (p *EntityQueryParams) WithIncludeFields(fields ...string) *EntityQueryParams <span class="cov8" title="1">{
+        p.IncludeFields = fields
+        return p
+}</span>
+
+// WithExcludeFields adds fields to exclude from the response
+func (p *EntityQueryParams) WithExcludeFields(fields ...string) *EntityQueryParams <span class="cov8" title="1">{
+        p.ExcludeFields = fields
+        return p
+}</span>
+
+// WithMaxRecords sets the maximum number of records to return
+func (p *EntityQueryParams) WithMaxRecords(max int) *EntityQueryParams <span class="cov8" title="1">{
+        p.MaxRecords = max
+        return p
+}</span>
+
+// WithPage adds page number to the query parameters
+func (p *EntityQueryParams) WithPage(page int) *EntityQueryParams <span class="cov8" title="1">{
+        p.Page = page
+        return p
+}</span>
+
+// ParseFilterString parses a filter string into a query filter or filter group
+// Supports basic conditions and complex conditions with AND/OR operators
+// Examples:
+//   - "Status=1"
+//   - "Status!=5"
+//   - "Name contains 'test'"
+//   - "Status=1 AND AssignedTo=123"
+//   - "Status=1 OR Status=2"
+//   - "Status=1 AND (AssignedTo=123 OR AssignedTo=456)"
+func ParseFilterString(filterStr string) interface{} <span class="cov8" title="1">{
+        if filterStr == "" </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        // Check if the filter contains logical operators
+        <span class="cov8" title="1">if strings.Contains(strings.ToUpper(filterStr), " AND ") || strings.Contains(strings.ToUpper(filterStr), " OR ") </span><span class="cov8" title="1">{
+                return parseComplexFilter(filterStr)
+        }</span>
+
+        // Handle simple filter
+        <span class="cov8" title="1">return parseSimpleFilter(filterStr)</span>
+}
+
+// parseSimpleFilter parses a simple filter string (no logical operators)
+func parseSimpleFilter(filterStr string) QueryFilter <span class="cov8" title="1">{
+        // Handle not equals
+        if strings.Contains(filterStr, "!=") </span><span class="cov0" title="0">{
+                parts := strings.Split(filterStr, "!=")
+                if len(parts) == 2 </span><span class="cov0" title="0">{
+                        field := strings.TrimSpace(parts[0])
+                        value := strings.TrimSpace(parts[1])
+                        return parseValueWithOperator(field, OperatorNotEquals, value)
+                }</span>
+        }
+
+        // Handle contains
+        <span class="cov8" title="1">if strings.Contains(strings.ToLower(filterStr), " contains ") </span><span class="cov0" title="0">{
+                parts := strings.Split(strings.ToLower(filterStr), " contains ")
+                if len(parts) == 2 </span><span class="cov0" title="0">{
+                        field := strings.TrimSpace(parts[0])
+                        value := strings.TrimSpace(parts[1])
+                        // Remove quotes if present
+                        value = strings.Trim(value, "'\"")
+                        return NewQueryFilter(field, OperatorContains, value)
+                }</span>
+        }
+
+        // Handle greater than
+        <span class="cov8" title="1">if strings.Contains(filterStr, "&gt;") </span><span class="cov0" title="0">{
+                parts := strings.Split(filterStr, "&gt;")
+                if len(parts) == 2 </span><span class="cov0" title="0">{
+                        field := strings.TrimSpace(parts[0])
+                        value := strings.TrimSpace(parts[1])
+                        return parseValueWithOperator(field, OperatorGreaterThan, value)
+                }</span>
+        }
+
+        // Handle less than
+        <span class="cov8" title="1">if strings.Contains(filterStr, "&lt;") </span><span class="cov0" title="0">{
+                parts := strings.Split(filterStr, "&lt;")
+                if len(parts) == 2 </span><span class="cov0" title="0">{
+                        field := strings.TrimSpace(parts[0])
+                        value := strings.TrimSpace(parts[1])
+                        return parseValueWithOperator(field, OperatorLessThan, value)
+                }</span>
+        }
+
+        // Handle equals (default)
+        <span class="cov8" title="1">parts := strings.Split(filterStr, "=")
+        if len(parts) == 2 </span><span class="cov8" title="1">{
+                field := strings.TrimSpace(parts[0])
+                value := strings.TrimSpace(parts[1])
+                return parseValueWithOperator(field, OperatorEquals, value)
+        }</span>
+
+        // If we can't parse it, return a dummy filter
+        <span class="cov0" title="0">return QueryFilter{}</span>
+}
+
+// parseValueWithOperator parses a value and applies the appropriate type conversion
+func parseValueWithOperator(field string, operator QueryOperator, valueStr string) QueryFilter <span class="cov8" title="1">{
+        // Handle boolean values
+        if valueStr == "true" </span><span class="cov0" title="0">{
+                return NewQueryFilter(field, operator, true)
+        }</span> else<span class="cov8" title="1"> if valueStr == "false" </span><span class="cov0" title="0">{
+                return NewQueryFilter(field, operator, false)
+        }</span>
+
+        // Handle numeric values
+        <span class="cov8" title="1">if isNumeric(valueStr) </span><span class="cov0" title="0">{
+                // Try to parse as int first
+                if !strings.Contains(valueStr, ".") </span><span class="cov0" title="0">{
+                        return NewQueryFilter(field, operator, parseInt(valueStr))
+                }</span>
+                // If it has a decimal point, parse as float
+                <span class="cov0" title="0">return NewQueryFilter(field, operator, parseFloat(valueStr))</span>
+        }
+
+        // Default to string
+        <span class="cov8" title="1">return NewQueryFilter(field, operator, valueStr)</span>
+}
+
+// parseComplexFilter parses a complex filter string with logical operators
+func parseComplexFilter(filterStr string) interface{} <span class="cov8" title="1">{
+        // Handle parentheses for nested conditions
+        if strings.Contains(filterStr, "(") &amp;&amp; strings.Contains(filterStr, ")") </span><span class="cov8" title="1">{
+                // This is a complex case with nested conditions
+                // For now, we'll implement a simple version that handles one level of nesting
+                return parseNestedFilter(filterStr)
+        }</span>
+
+        // Check if it's an AND condition
+        <span class="cov8" title="1">if strings.Contains(strings.ToUpper(filterStr), " AND ") </span><span class="cov8" title="1">{
+                parts := strings.Split(strings.ToUpper(filterStr), " AND ")
+                filters := make([]interface{}, len(parts))
+                for i, part := range parts </span><span class="cov8" title="1">{
+                        filters[i] = parseSimpleFilter(strings.TrimSpace(part))
+                }</span>
+                <span class="cov8" title="1">return NewAndFilterGroup(filters...)</span>
+        }
+
+        // Check if it's an OR condition
+        <span class="cov8" title="1">if strings.Contains(strings.ToUpper(filterStr), " OR ") </span><span class="cov8" title="1">{
+                parts := strings.Split(strings.ToUpper(filterStr), " OR ")
+                filters := make([]interface{}, len(parts))
+                for i, part := range parts </span><span class="cov8" title="1">{
+                        filters[i] = parseSimpleFilter(strings.TrimSpace(part))
+                }</span>
+                <span class="cov8" title="1">return NewOrFilterGroup(filters...)</span>
+        }
+
+        // If we can't parse it as a complex filter, try as a simple filter
+        <span class="cov0" title="0">return parseSimpleFilter(filterStr)</span>
+}
+
+// parseNestedFilter parses a filter string with nested conditions
+func parseNestedFilter(filterStr string) interface{} <span class="cov8" title="1">{
+        // This is a simplified implementation that handles basic nesting
+        // A full implementation would need a proper parser
+
+        // Check if it's an AND condition with nested OR
+        if strings.Contains(strings.ToUpper(filterStr), " AND ") </span><span class="cov8" title="1">{
+                parts := strings.Split(strings.ToUpper(filterStr), " AND ")
+                filters := make([]interface{}, 0, len(parts))
+
+                for _, part := range parts </span><span class="cov8" title="1">{
+                        part = strings.TrimSpace(part)
+                        if strings.HasPrefix(part, "(") &amp;&amp; strings.HasSuffix(part, ")") </span><span class="cov8" title="1">{
+                                // This is a nested condition
+                                nestedPart := part[1 : len(part)-1] // Remove parentheses
+                                if strings.Contains(strings.ToUpper(nestedPart), " OR ") </span><span class="cov8" title="1">{
+                                        // Parse as OR group
+                                        nestedParts := strings.Split(strings.ToUpper(nestedPart), " OR ")
+                                        nestedFilters := make([]interface{}, len(nestedParts))
+                                        for i, np := range nestedParts </span><span class="cov8" title="1">{
+                                                nestedFilters[i] = parseSimpleFilter(strings.TrimSpace(np))
+                                        }</span>
+                                        <span class="cov8" title="1">filters = append(filters, NewOrFilterGroup(nestedFilters...))</span>
+                                } else<span class="cov0" title="0"> {
+                                        // Parse as simple filter
+                                        filters = append(filters, parseSimpleFilter(nestedPart))
+                                }</span>
+                        } else<span class="cov8" title="1"> {
+                                // Parse as simple filter
+                                filters = append(filters, parseSimpleFilter(part))
+                        }</span>
+                }
+
+                <span class="cov8" title="1">return NewAndFilterGroup(filters...)</span>
+        }
+
+        // Check if it's an OR condition with nested AND
+        <span class="cov0" title="0">if strings.Contains(strings.ToUpper(filterStr), " OR ") </span><span class="cov0" title="0">{
+                parts := strings.Split(strings.ToUpper(filterStr), " OR ")
+                filters := make([]interface{}, 0, len(parts))
+
+                for _, part := range parts </span><span class="cov0" title="0">{
+                        part = strings.TrimSpace(part)
+                        if strings.HasPrefix(part, "(") &amp;&amp; strings.HasSuffix(part, ")") </span><span class="cov0" title="0">{
+                                // This is a nested condition
+                                nestedPart := part[1 : len(part)-1] // Remove parentheses
+                                if strings.Contains(strings.ToUpper(nestedPart), " AND ") </span><span class="cov0" title="0">{
+                                        // Parse as AND group
+                                        nestedParts := strings.Split(strings.ToUpper(nestedPart), " AND ")
+                                        nestedFilters := make([]interface{}, len(nestedParts))
+                                        for i, np := range nestedParts </span><span class="cov0" title="0">{
+                                                nestedFilters[i] = parseSimpleFilter(strings.TrimSpace(np))
+                                        }</span>
+                                        <span class="cov0" title="0">filters = append(filters, NewAndFilterGroup(nestedFilters...))</span>
+                                } else<span class="cov0" title="0"> {
+                                        // Parse as simple filter
+                                        filters = append(filters, parseSimpleFilter(nestedPart))
+                                }</span>
+                        } else<span class="cov0" title="0"> {
+                                // Parse as simple filter
+                                filters = append(filters, parseSimpleFilter(part))
+                        }</span>
+                }
+
+                <span class="cov0" title="0">return NewOrFilterGroup(filters...)</span>
+        }
+
+        // If we can't parse it as a nested filter, try as a simple filter
+        <span class="cov0" title="0">return parseSimpleFilter(filterStr)</span>
+}
+
+// Helper functions for type conversion
+func isNumeric(s string) bool <span class="cov8" title="1">{
+        // Check if the string is a valid number
+        _, err := fmt.Sscanf(s, "%f", &amp;struct{}{})
+        return err == nil
+}</span>
+
+func parseInt(s string) int64 <span class="cov0" title="0">{
+        var i int64
+        _, err := fmt.Sscanf(s, "%d", &amp;i)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0
+        }</span>
+        <span class="cov0" title="0">return i</span>
+}
+
+func parseFloat(s string) float64 <span class="cov0" title="0">{
+        var f float64
+        _, err := fmt.Sscanf(s, "%f", &amp;f)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0
+        }</span>
+        <span class="cov0" title="0">return f</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package autotask
+
+import (
+        "sync"
+        "time"
+)
+
+// RateLimiter handles API rate limiting
+type RateLimiter struct {
+        requestsPerMinute int
+        lastRequest       time.Time
+        mu                sync.Mutex
+}
+
+// NewRateLimiter creates a new rate limiter
+func NewRateLimiter(requestsPerMinute int) *RateLimiter <span class="cov8" title="1">{
+        return &amp;RateLimiter{
+                requestsPerMinute: requestsPerMinute,
+        }
+}</span>
+
+// Wait waits if necessary to respect rate limits
+func (r *RateLimiter) Wait() time.Duration <span class="cov8" title="1">{
+        r.mu.Lock()
+        defer r.mu.Unlock()
+
+        now := time.Now()
+        elapsed := now.Sub(r.lastRequest)
+        waitTime := time.Minute/time.Duration(r.requestsPerMinute) - elapsed
+
+        if waitTime &gt; 0 </span><span class="cov8" title="1">{
+                time.Sleep(waitTime)
+        }</span>
+
+        <span class="cov8" title="1">r.lastRequest = time.Now()
+        return waitTime</span>
+}
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package autotask
+
+import (
+        "context"
+        "fmt"
+        "net/http"
+        "time"
+)
+
+// RetryConfig configures retry behavior
+type RetryConfig struct {
+        MaxRetries      int
+        InitialInterval time.Duration
+        MaxInterval     time.Duration
+        Multiplier      float64
+        Jitter          float64
+}
+
+// DefaultRetryConfig returns a default retry configuration
+func DefaultRetryConfig() *RetryConfig <span class="cov8" title="1">{
+        return &amp;RetryConfig{
+                MaxRetries:      3,
+                InitialInterval: 100 * time.Millisecond,
+                MaxInterval:     2 * time.Second,
+                Multiplier:      2.0,
+                Jitter:          0.1,
+        }
+}</span>
+
+// RetryableError represents an error that can be retried
+type RetryableError struct {
+        Err      error
+        Response *http.Response
+}
+
+func (e *RetryableError) Error() string <span class="cov8" title="1">{
+        return fmt.Sprintf("retryable error: %v", e.Err)
+}</span>
+
+// Unwrap returns the underlying error
+func (e *RetryableError) Unwrap() error <span class="cov8" title="1">{
+        return e.Err
+}</span>
+
+// IsRetryable checks if an error should be retried
+func IsRetryable(err error) bool <span class="cov8" title="1">{
+        if err == nil </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        // Check if it's a retryable error type
+        <span class="cov8" title="1">if _, ok := err.(*RetryableError); ok </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        // Check HTTP response status codes
+        <span class="cov8" title="1">if resp, ok := err.(*ErrorResponse); ok </span><span class="cov8" title="1">{
+                switch resp.Response.StatusCode </span>{
+                case http.StatusTooManyRequests,
+                        http.StatusInternalServerError,
+                        http.StatusBadGateway,
+                        http.StatusServiceUnavailable,
+                        http.StatusGatewayTimeout:<span class="cov8" title="1">
+                        return true</span>
+                }
+        }
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// RetryWithBackoff implements exponential backoff with jitter
+func RetryWithBackoff(ctx context.Context, config *RetryConfig, operation func() error) error <span class="cov8" title="1">{
+        var lastErr error
+        interval := config.InitialInterval
+
+        for attempt := 1; attempt &lt;= config.MaxRetries; attempt++ </span><span class="cov8" title="1">{
+                // Check context cancellation
+                if err := ctx.Err(); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("context cancelled: %w", err)
+                }</span>
+
+                // Execute operation
+                <span class="cov8" title="1">err := operation()
+                if err == nil </span><span class="cov8" title="1">{
+                        return nil
+                }</span>
+
+                <span class="cov8" title="1">lastErr = err
+
+                // Check if error is retryable
+                if !IsRetryable(err) </span><span class="cov8" title="1">{
+                        return err
+                }</span>
+
+                // Calculate next interval with exponential backoff
+                <span class="cov8" title="1">interval = time.Duration(float64(interval) * config.Multiplier)
+                if interval &gt; config.MaxInterval </span><span class="cov0" title="0">{
+                        interval = config.MaxInterval
+                }</span>
+
+                // Add jitter
+                <span class="cov8" title="1">if config.Jitter &gt; 0 </span><span class="cov8" title="1">{
+                        jitter := time.Duration(float64(interval) * config.Jitter)
+                        interval += time.Duration(time.Now().UnixNano() % int64(jitter))
+                }</span>
+
+                // Wait before retry
+                <span class="cov8" title="1">select </span>{
+                case &lt;-ctx.Done():<span class="cov8" title="1">
+                        return fmt.Errorf("context cancelled: %w", ctx.Err())</span>
+                case &lt;-time.After(interval):<span class="cov8" title="1">
+                        continue</span>
+                }
+        }
+
+        <span class="cov8" title="1">return fmt.Errorf("max retries exceeded: %w", lastErr)</span>
+}
+
+// WithRetry wraps an operation with retry logic
+func WithRetry(ctx context.Context, config *RetryConfig, operation func() error) error <span class="cov8" title="1">{
+        if config == nil </span><span class="cov8" title="1">{
+                config = DefaultRetryConfig()
+        }</span>
+
+        <span class="cov8" title="1">return RetryWithBackoff(ctx, config, operation)</span>
+}
+</pre>
+		
+		<pre class="file" id="file18" style="display: none">package autotask
+
+import (
+        "bytes"
+        "context"
+        "crypto/hmac"
+        "crypto/sha256"
+        "encoding/hex"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+)
+
+// companiesService implements the CompaniesService interface
+type companiesService struct {
+        BaseEntityService
+}
+
+// Get gets a company by ID.
+func (s *companiesService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Get(ctx, id)
+}</span>
+
+// Query queries companies with a filter.
+func (s *companiesService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov8" title="1">{
+        return s.BaseEntityService.Query(ctx, filter, result)
+}</span>
+
+// Create creates a new company.
+func (s *companiesService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Create(ctx, entity)
+}</span>
+
+// Update updates an existing company.
+func (s *companiesService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Update(ctx, id, entity)
+}</span>
+
+// Delete deletes a company by ID.
+func (s *companiesService) Delete(ctx context.Context, id int64) error <span class="cov8" title="1">{
+        return s.BaseEntityService.Delete(ctx, id)
+}</span>
+
+// Count counts companies matching a filter.
+func (s *companiesService) Count(ctx context.Context, filter string) (int, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Count(ctx, filter)
+}</span>
+
+// GetNextPage gets the next page of results.
+func (s *companiesService) GetNextPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.GetNextPage(ctx, pageDetails)
+}</span>
+
+// GetPreviousPage gets the previous page of results.
+func (s *companiesService) GetPreviousPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.GetPreviousPage(ctx, pageDetails)
+}</span>
+
+// ticketsService implements the TicketsService interface
+type ticketsService struct {
+        BaseEntityService
+}
+
+// contactsService implements the ContactsService interface
+type contactsService struct {
+        BaseEntityService
+}
+
+// webhookService implements the WebhookService interface
+type webhookService struct {
+        BaseEntityService
+        handlers map[string][]WebhookHandler
+        secret   string // Secret for webhook verification
+}
+
+// RegisterHandler registers a webhook handler
+func (s *webhookService) RegisterHandler(eventType string, handler WebhookHandler) <span class="cov8" title="1">{
+        // Initialize handlers map if it doesn't exist
+        if s.handlers == nil </span><span class="cov8" title="1">{
+                s.handlers = make(map[string][]WebhookHandler)
+        }</span>
+
+        // Add the handler to the appropriate event type
+        <span class="cov8" title="1">s.handlers[eventType] = append(s.handlers[eventType], handler)</span>
+}
+
+// HandleWebhook handles incoming webhook requests
+func (s *webhookService) HandleWebhook(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        // Verify the request method
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+
+        // Verify webhook signature if secret is set
+        <span class="cov8" title="1">if s.secret != "" </span><span class="cov8" title="1">{
+                signature := r.Header.Get("X-Autotask-Signature")
+                if signature == "" </span><span class="cov8" title="1">{
+                        http.Error(w, "Missing signature header", http.StatusUnauthorized)
+                        return
+                }</span>
+
+                // Read the request body
+                <span class="cov8" title="1">body, err := io.ReadAll(r.Body)
+                if err != nil </span><span class="cov0" title="0">{
+                        http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+                        return
+                }</span>
+
+                // Important: Restore the body for later use
+                <span class="cov8" title="1">r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+                // Verify the signature
+                if !s.verifySignature(signature, body) </span><span class="cov8" title="1">{
+                        http.Error(w, "Invalid signature", http.StatusUnauthorized)
+                        return
+                }</span>
+        }
+
+        // Parse the webhook event
+        <span class="cov8" title="1">var event WebhookEvent
+        if err := json.NewDecoder(r.Body).Decode(&amp;event); err != nil </span><span class="cov8" title="1">{
+                http.Error(w, "Failed to parse webhook event", http.StatusBadRequest)
+                return
+        }</span>
+
+        // Get handlers for this event type
+        <span class="cov8" title="1">handlers, exists := s.handlers[event.EventType]
+        if !exists || len(handlers) == 0 </span><span class="cov8" title="1">{
+                // No handlers registered for this event type
+                // Return 200 OK to acknowledge receipt
+                w.WriteHeader(http.StatusOK)
+                return
+        }</span>
+
+        // Call all registered handlers
+        <span class="cov8" title="1">for _, handler := range handlers </span><span class="cov8" title="1">{
+                if err := handler(&amp;event); err != nil </span><span class="cov8" title="1">{
+                        // Log the error but continue processing other handlers
+                        s.GetClient().(*client).logger.LogError(fmt.Errorf("webhook handler error: %w", err))
+                }</span>
+        }
+
+        // Return 200 OK to acknowledge receipt
+        <span class="cov8" title="1">w.WriteHeader(http.StatusOK)</span>
+}
+
+// verifySignature verifies the webhook signature
+func (s *webhookService) verifySignature(signature string, body []byte) bool <span class="cov8" title="1">{
+        // Create HMAC-SHA256 hash using the webhook secret
+        mac := hmac.New(sha256.New, []byte(s.secret))
+        mac.Write(body)
+        expectedSignature := hex.EncodeToString(mac.Sum(nil))
+
+        // Compare the expected signature with the provided signature
+        return hmac.Equal([]byte(signature), []byte(expectedSignature))
+}</span>
+
+// SetWebhookSecret sets the secret for webhook verification
+func (s *webhookService) SetWebhookSecret(secret string) <span class="cov8" title="1">{
+        s.secret = secret
+}</span>
+
+// CreateWebhook creates a new webhook
+func (s *webhookService) CreateWebhook(ctx context.Context, url string, events []string) error <span class="cov8" title="1">{
+        webhook := struct {
+                URL    string   `json:"url"`
+                Events []string `json:"events"`
+        }{
+                URL:    url,
+                Events: events,
+        }
+
+        _, err := s.Create(ctx, webhook)
+        return err
+}</span>
+
+// DeleteWebhook deletes a webhook
+func (s *webhookService) DeleteWebhook(ctx context.Context, id int64) error <span class="cov8" title="1">{
+        return s.Delete(ctx, id)
+}</span>
+
+// ListWebhooks lists all webhooks
+func (s *webhookService) ListWebhooks(ctx context.Context) ([]interface{}, error) <span class="cov8" title="1">{
+        var result ListResponse
+        err := s.Query(ctx, "", &amp;result)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return result.Items, nil</span>
+}
+
+// resourcesService handles communication with the resources related methods of the Autotask API.
+type resourcesService struct {
+        BaseEntityService
+}
+
+// projectsService handles communication with the projects related methods of the Autotask API.
+type projectsService struct {
+        BaseEntityService
+}
+
+// Get gets a project by ID.
+func (s *projectsService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Get(ctx, id)
+}</span>
+
+// Query queries projects with a filter.
+func (s *projectsService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov8" title="1">{
+        return s.BaseEntityService.Query(ctx, filter, result)
+}</span>
+
+// Create creates a new project.
+func (s *projectsService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Create(ctx, entity)
+}</span>
+
+// Update updates an existing project.
+func (s *projectsService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov8" title="1">{
+        return s.BaseEntityService.Update(ctx, id, entity)
+}</span>
+
+// Delete deletes a project by ID.
+func (s *projectsService) Delete(ctx context.Context, id int64) error <span class="cov8" title="1">{
+        return s.BaseEntityService.Delete(ctx, id)
+}</span>
+
+// tasksService handles communication with the tasks related methods of the Autotask API.
+type tasksService struct {
+        BaseEntityService
+}
+
+// Get gets a task by ID.
+func (s *tasksService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Get(ctx, id)
+}</span>
+
+// Query queries tasks with a filter.
+func (s *tasksService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Query(ctx, filter, result)
+}</span>
+
+// Create creates a new task.
+func (s *tasksService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Create(ctx, entity)
+}</span>
+
+// Update updates an existing task.
+func (s *tasksService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Update(ctx, id, entity)
+}</span>
+
+// Delete deletes a task by ID.
+func (s *tasksService) Delete(ctx context.Context, id int64) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Delete(ctx, id)
+}</span>
+
+// timeEntriesService handles communication with the time entries related methods of the Autotask API.
+type timeEntriesService struct {
+        BaseEntityService
+}
+
+// Get gets a time entry by ID.
+func (s *timeEntriesService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Get(ctx, id)
+}</span>
+
+// Query queries time entries with a filter.
+func (s *timeEntriesService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Query(ctx, filter, result)
+}</span>
+
+// Create creates a new time entry.
+func (s *timeEntriesService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Create(ctx, entity)
+}</span>
+
+// Update updates an existing time entry.
+func (s *timeEntriesService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Update(ctx, id, entity)
+}</span>
+
+// Delete deletes a time entry by ID.
+func (s *timeEntriesService) Delete(ctx context.Context, id int64) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Delete(ctx, id)
+}</span>
+
+// contractsService handles communication with the contracts related methods of the Autotask API.
+type contractsService struct {
+        BaseEntityService
+}
+
+// Get gets a contract by ID.
+func (s *contractsService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Get(ctx, id)
+}</span>
+
+// Query queries contracts with a filter.
+func (s *contractsService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Query(ctx, filter, result)
+}</span>
+
+// Create creates a new contract.
+func (s *contractsService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Create(ctx, entity)
+}</span>
+
+// Update updates an existing contract.
+func (s *contractsService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Update(ctx, id, entity)
+}</span>
+
+// Delete deletes a contract by ID.
+func (s *contractsService) Delete(ctx context.Context, id int64) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Delete(ctx, id)
+}</span>
+
+// configurationItemsService handles communication with the configuration items related methods of the Autotask API.
+type configurationItemsService struct {
+        BaseEntityService
+}
+
+// Get gets a configuration item by ID.
+func (s *configurationItemsService) Get(ctx context.Context, id int64) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Get(ctx, id)
+}</span>
+
+// Query queries configuration items with a filter.
+func (s *configurationItemsService) Query(ctx context.Context, filter string, result interface{}) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Query(ctx, filter, result)
+}</span>
+
+// Create creates a new configuration item.
+func (s *configurationItemsService) Create(ctx context.Context, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Create(ctx, entity)
+}</span>
+
+// Update updates an existing configuration item.
+func (s *configurationItemsService) Update(ctx context.Context, id int64, entity interface{}) (interface{}, error) <span class="cov0" title="0">{
+        return s.BaseEntityService.Update(ctx, id, entity)
+}</span>
+
+// Delete deletes a configuration item by ID.
+func (s *configurationItemsService) Delete(ctx context.Context, id int64) error <span class="cov0" title="0">{
+        return s.BaseEntityService.Delete(ctx, id)
+}</span>
+</pre>
+		
+		<pre class="file" id="file19" style="display: none">package autotask
+
+import (
+        "encoding/json"
+        "fmt"
+        "net/http"
+        "net/http/httptest"
+        "net/url"
+        "strings"
+        "testing"
+)
+
+// MockResponse represents a mock API response
+type MockResponse struct {
+        StatusCode int
+        Body       interface{}
+        Headers    map[string]string
+}
+
+// MockServer represents a mock Autotask API server for testing
+type MockServer struct {
+        Server           *httptest.Server
+        Mux              *http.ServeMux
+        ResponseHandlers map[string]func(w http.ResponseWriter, r *http.Request)
+        Requests         []*http.Request
+        RequestBodies    [][]byte
+        t                *testing.T
+}
+
+// NewMockServer creates a new mock Autotask API server
+func NewMockServer(t *testing.T) *MockServer <span class="cov8" title="1">{
+        mux := http.NewServeMux()
+        server := httptest.NewServer(mux)
+
+        mock := &amp;MockServer{
+                Server:           server,
+                Mux:              mux,
+                ResponseHandlers: make(map[string]func(w http.ResponseWriter, r *http.Request)),
+                Requests:         make([]*http.Request, 0),
+                RequestBodies:    make([][]byte, 0),
+                t:                t,
+        }
+
+        // Setup default zone info handler
+        mock.AddHandler("/ZoneInformation", func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                zoneInfo := ZoneInfo{
+                        ZoneName: "MockZone",
+                        URL:      fmt.Sprintf("%s/atservicesrest/", server.URL),
+                        WebURL:   fmt.Sprintf("%s/web/", server.URL),
+                        CI:       1,
+                }
+                mock.RespondWithJSON(w, http.StatusOK, zoneInfo)
+        }</span>)
+
+        <span class="cov8" title="1">return mock</span>
+}
+
+// AddHandler adds a response handler for a specific path
+func (m *MockServer) AddHandler(path string, handler func(w http.ResponseWriter, r *http.Request)) <span class="cov8" title="1">{
+        m.ResponseHandlers[path] = handler
+        m.Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                // Record the request for later inspection
+                m.Requests = append(m.Requests, r)
+
+                // Read and record the request body
+                if r.Body != nil </span><span class="cov8" title="1">{
+                        body := make([]byte, r.ContentLength)
+                        r.Body.Read(body)
+                        m.RequestBodies = append(m.RequestBodies, body)
+
+                        // Reset the body for the handler
+                        r.Body = &amp;readCloser{strings.NewReader(string(body))}
+                }</span>
+
+                // Call the handler
+                <span class="cov8" title="1">handler(w, r)</span>
+        })
+
+        // Also handle the path with the API version prefix if it doesn't already have it
+        <span class="cov8" title="1">if !strings.HasPrefix(path, "/atservicesrest/v1.0") &amp;&amp; !strings.HasPrefix(path, "/ZoneInformation") </span><span class="cov8" title="1">{
+                apiPath := "/atservicesrest/v1.0" + path
+                m.Mux.HandleFunc(apiPath, func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                        // Record the request for later inspection
+                        m.Requests = append(m.Requests, r)
+
+                        // Read and record the request body
+                        if r.Body != nil </span><span class="cov0" title="0">{
+                                body := make([]byte, r.ContentLength)
+                                r.Body.Read(body)
+                                m.RequestBodies = append(m.RequestBodies, body)
+
+                                // Reset the body for the handler
+                                r.Body = &amp;readCloser{strings.NewReader(string(body))}
+                        }</span>
+
+                        // Call the handler
+                        <span class="cov0" title="0">handler(w, r)</span>
+                })
+        }
+}
+
+// RespondWithJSON sends a JSON response with the given status code and body
+func (m *MockServer) RespondWithJSON(w http.ResponseWriter, statusCode int, body interface{}) <span class="cov8" title="1">{
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(statusCode)
+
+        if body != nil </span><span class="cov8" title="1">{
+                if err := json.NewEncoder(w).Encode(body); err != nil </span><span class="cov0" title="0">{
+                        m.t.Fatalf("failed to encode response body: %v", err)
+                }</span>
+        }
+}
+
+// RespondWithError sends an error response with the given status code and message
+func (m *MockServer) RespondWithError(w http.ResponseWriter, statusCode int, message string, errors []string) <span class="cov8" title="1">{
+        errorResponse := ErrorResponse{
+                Message: message,
+                Errors:  errors,
+        }
+        m.RespondWithJSON(w, statusCode, errorResponse)
+}</span>
+
+// Close closes the mock server
+func (m *MockServer) Close() <span class="cov8" title="1">{
+        m.Server.Close()
+}</span>
+
+// NewTestClient creates a new client that uses the mock server
+func (m *MockServer) NewTestClient() Client <span class="cov8" title="1">{
+        c := NewClient("test-user", "test-secret", "test-integration-code").(*client)
+
+        // Override the base zone info URL to use the mock server
+        baseURL, _ := url.Parse(m.Server.URL)
+        c.baseURL = baseURL
+
+        // Set the zone info directly to avoid making an HTTP request
+        c.zoneInfo = &amp;ZoneInfo{
+                ZoneName: "MockZone",
+                URL:      fmt.Sprintf("%s/atservicesrest/", m.Server.URL),
+                WebURL:   fmt.Sprintf("%s/web/", m.Server.URL),
+                CI:       1,
+        }
+
+        return c
+}</span>
+
+// GetLastRequest returns the last request made to the mock server
+func (m *MockServer) GetLastRequest() *http.Request <span class="cov0" title="0">{
+        if len(m.Requests) == 0 </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">return m.Requests[len(m.Requests)-1]</span>
+}
+
+// GetLastRequestBody returns the body of the last request made to the mock server
+func (m *MockServer) GetLastRequestBody() []byte <span class="cov0" title="0">{
+        if len(m.RequestBodies) == 0 </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">return m.RequestBodies[len(m.RequestBodies)-1]</span>
+}
+
+// readCloser is a helper type that implements io.ReadCloser
+type readCloser struct {
+        *strings.Reader
+}
+
+// Close implements io.Closer
+func (r *readCloser) Close() error <span class="cov0" title="0">{
+        return nil
+}</span>
+
+// CreateMockListResponse creates a mock list response with the given items
+func CreateMockListResponse(items []interface{}, pageNumber, pageSize, totalCount int) map[string]interface{} <span class="cov8" title="1">{
+        nextPageUrl := ""
+        prevPageUrl := ""
+
+        if pageNumber*pageSize &lt; totalCount </span><span class="cov8" title="1">{
+                nextPageUrl = fmt.Sprintf("?page=%d&amp;pageSize=%d", pageNumber+1, pageSize)
+        }</span>
+
+        <span class="cov8" title="1">if pageNumber &gt; 1 </span><span class="cov8" title="1">{
+                prevPageUrl = fmt.Sprintf("?page=%d&amp;pageSize=%d", pageNumber-1, pageSize)
+        }</span>
+
+        <span class="cov8" title="1">pageDetails := PageDetails{
+                PageNumber:  pageNumber,
+                PageSize:    pageSize,
+                Count:       totalCount,
+                NextPageUrl: nextPageUrl,
+                PrevPageUrl: prevPageUrl,
+        }
+
+        return map[string]interface{}{
+                "items":       items,
+                "pageDetails": pageDetails,
+        }</span>
+}
+
+// CreateMockEntity creates a mock entity with the given ID
+func CreateMockEntity(id int64, entityType string) map[string]interface{} <span class="cov8" title="1">{
+        return map[string]interface{}{
+                "id":   id,
+                "name": fmt.Sprintf("Mock %s %d", entityType, id),
+        }
+}</span>
+
+// CreateMockEntities creates a list of mock entities
+func CreateMockEntities(count int, entityType string, startID int64) []interface{} <span class="cov8" title="1">{
+        entities := make([]interface{}, count)
+        for i := 0; i &lt; count; i++ </span><span class="cov8" title="1">{
+                entities[i] = CreateMockEntity(startID+int64(i), entityType)
+        }</span>
+        <span class="cov8" title="1">return entities</span>
+}
+
+// AssertEqual asserts that two values are equal
+func AssertEqual(t *testing.T, expected, actual interface{}, message string) <span class="cov8" title="1">{
+        t.Helper()
+        if expected != actual </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected %v, got %v", message, expected, actual)
+        }</span>
+}
+
+// AssertNotNil asserts that a value is not nil
+func AssertNotNil(t *testing.T, value interface{}, message string) <span class="cov8" title="1">{
+        t.Helper()
+        if value == nil </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected non-nil value", message)
+        }</span>
+}
+
+// AssertNil asserts that a value is nil
+func AssertNil(t *testing.T, value interface{}, message string) <span class="cov8" title="1">{
+        t.Helper()
+        if value != nil </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected nil value, got %v", message, value)
+        }</span>
+}
+
+// AssertTrue asserts that a condition is true
+func AssertTrue(t *testing.T, condition bool, message string) <span class="cov8" title="1">{
+        t.Helper()
+        if !condition </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected true", message)
+        }</span>
+}
+
+// AssertFalse asserts that a condition is false
+func AssertFalse(t *testing.T, condition bool, message string) <span class="cov0" title="0">{
+        t.Helper()
+        if condition </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected false", message)
+        }</span>
+}
+
+// AssertContains asserts that a string contains a substring
+func AssertContains(t *testing.T, haystack, needle string, message string) <span class="cov8" title="1">{
+        t.Helper()
+        if !strings.Contains(haystack, needle) </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected %q to contain %q", message, haystack, needle)
+        }</span>
+}
+
+// AssertNotContains asserts that a string does not contain a substring
+func AssertNotContains(t *testing.T, haystack, needle string, message string) <span class="cov0" title="0">{
+        t.Helper()
+        if strings.Contains(haystack, needle) </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected %q to not contain %q", message, haystack, needle)
+        }</span>
+}
+
+// AssertLen asserts that a slice or map has the expected length
+func AssertLen(t *testing.T, value interface{}, expected int, message string) <span class="cov8" title="1">{
+        t.Helper()
+
+        var actual int
+
+        switch v := value.(type) </span>{
+        case []interface{}:<span class="cov8" title="1">
+                actual = len(v)</span>
+        case map[string]interface{}:<span class="cov0" title="0">
+                actual = len(v)</span>
+        case string:<span class="cov0" title="0">
+                actual = len(v)</span>
+        case []string:<span class="cov8" title="1">
+                actual = len(v)</span>
+        case []int:<span class="cov0" title="0">
+                actual = len(v)</span>
+        case []int64:<span class="cov0" title="0">
+                actual = len(v)</span>
+        default:<span class="cov0" title="0">
+                t.Fatalf("%s: unsupported type for length assertion: %T", message, value)</span>
+        }
+
+        <span class="cov8" title="1">if actual != expected </span><span class="cov0" title="0">{
+                t.Errorf("%s: expected length %d, got %d", message, expected, actual)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file20" style="display: none">package autotask
+
+import (
+        "context"
+        "encoding/json"
+        "fmt"
+        "net/http"
+        "os"
+)
+
+// LogLevel represents the logging level
+type LogLevel int
+
+const (
+        LogLevelDebug LogLevel = iota
+        LogLevelInfo
+        LogLevelWarn
+        LogLevelError
+)
+
+// PageDetails represents pagination information
+type PageDetails struct {
+        PageNumber  int    `json:"pageNumber"`
+        PageSize    int    `json:"pageSize"`
+        Count       int    `json:"count"`
+        NextPageUrl string `json:"nextPageUrl"`
+        PrevPageUrl string `json:"prevPageUrl"`
+}
+
+// EntityService represents the base interface for all entity services
+type EntityService interface {
+        // Get retrieves an entity by ID
+        Get(ctx context.Context, id int64) (interface{}, error)
+
+        // Query retrieves entities matching the filter
+        Query(ctx context.Context, filter string, result interface{}) error
+
+        // Create creates a new entity
+        Create(ctx context.Context, entity interface{}) (interface{}, error)
+
+        // Update updates an existing entity
+        Update(ctx context.Context, id int64, entity interface{}) (interface{}, error)
+
+        // Delete deletes an entity
+        Delete(ctx context.Context, id int64) error
+
+        // Count returns the number of entities matching the filter
+        Count(ctx context.Context, filter string) (int, error)
+
+        // Pagination handles paginated results
+        Pagination(ctx context.Context, url string, result interface{}) error
+
+        // BatchCreate creates multiple entities in a single request
+        BatchCreate(ctx context.Context, entities []interface{}, result interface{}) error
+
+        // BatchUpdate updates multiple entities in a single request
+        BatchUpdate(ctx context.Context, entities []interface{}, result interface{}) error
+
+        // BatchDelete deletes multiple entities in a single request
+        BatchDelete(ctx context.Context, ids []int64) error
+
+        // GetNextPage gets the next page of results
+        GetNextPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error)
+
+        // GetPreviousPage gets the previous page of results
+        GetPreviousPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error)
+
+        // GetEntityName returns the name of the entity
+        GetEntityName() string
+
+        // GetClient returns the client used by the service
+        GetClient() Client
+}
+
+// CompaniesService represents the companies service interface
+type CompaniesService interface {
+        EntityService
+}
+
+// TicketsService represents the tickets service interface
+type TicketsService interface {
+        EntityService
+}
+
+// ContactsService represents the contacts service interface
+type ContactsService interface {
+        EntityService
+}
+
+// WebhookHandler is a function type that handles webhook events
+type WebhookHandler func(event *WebhookEvent) error
+
+// WebhookEvent represents a webhook event from Autotask
+type WebhookEvent struct {
+        EventType string          `json:"eventType"`
+        Entity    string          `json:"entity"`
+        EntityID  int64           `json:"entityId"`
+        Timestamp string          `json:"timestamp"`
+        Data      json.RawMessage `json:"data"`
+}
+
+// WebhookService represents the webhook service interface
+type WebhookService interface {
+        EntityService
+        RegisterHandler(eventType string, handler WebhookHandler)
+        HandleWebhook(w http.ResponseWriter, r *http.Request)
+        CreateWebhook(ctx context.Context, url string, events []string) error
+        DeleteWebhook(ctx context.Context, id int64) error
+        ListWebhooks(ctx context.Context) ([]interface{}, error)
+        SetWebhookSecret(secret string)
+}
+
+// ResourcesService represents the resources service interface
+type ResourcesService interface {
+        EntityService
+}
+
+// ProjectsService represents the projects service interface
+type ProjectsService interface {
+        EntityService
+}
+
+// TasksService represents the tasks service interface
+type TasksService interface {
+        EntityService
+}
+
+// TimeEntriesService represents the time entries service interface
+type TimeEntriesService interface {
+        EntityService
+}
+
+// ContractsService represents the contracts service interface
+type ContractsService interface {
+        EntityService
+}
+
+// ConfigurationItemsService represents the configuration items service interface
+type ConfigurationItemsService interface {
+        EntityService
+}
+
+// Client represents the main interface for the Autotask API client
+type Client interface {
+        // Companies returns the companies service
+        Companies() CompaniesService
+
+        // Tickets returns the tickets service
+        Tickets() TicketsService
+
+        // Contacts returns the contacts service
+        Contacts() ContactsService
+
+        // Resources returns the resources service
+        Resources() ResourcesService
+
+        // Webhooks returns the webhooks service
+        Webhooks() WebhookService
+
+        // Projects returns the projects service
+        Projects() ProjectsService
+
+        // Tasks returns the tasks service
+        Tasks() TasksService
+
+        // TimeEntries returns the time entries service
+        TimeEntries() TimeEntriesService
+
+        // Contracts returns the contracts service
+        Contracts() ContractsService
+
+        // ConfigurationItems returns the configuration items service
+        ConfigurationItems() ConfigurationItemsService
+
+        // SetLogLevel sets the logging level
+        SetLogLevel(level LogLevel)
+
+        // SetDebugMode enables or disables debug logging
+        SetDebugMode(debug bool)
+
+        // SetLogOutput sets the output writer for the logger
+        SetLogOutput(output *os.File)
+
+        // GetZoneInfo gets the zone information for the Autotask account
+        GetZoneInfo() (*ZoneInfo, error)
+
+        // NewRequest creates a new HTTP request
+        NewRequest(ctx context.Context, method, url string, body interface{}) (*http.Request, error)
+
+        // Do sends an HTTP request and returns the response
+        Do(req *http.Request, v interface{}) (*http.Response, error)
+}
+
+// ZoneInfo represents the zone information for an Autotask account
+type ZoneInfo struct {
+        ZoneName string `json:"zoneName"`
+        URL      string `json:"url"`
+        WebURL   string `json:"webUrl"`
+        CI       int    `json:"ci"`
+}
+
+// ErrorResponse represents an error response from the Autotask API
+type ErrorResponse struct {
+        Response *http.Response
+        Message  string   `json:"Message"`
+        Errors   []string `json:"errors"`
+}
+
+// Error implements the error interface
+func (r *ErrorResponse) Error() string <span class="cov8" title="1">{
+        if len(r.Errors) &gt; 0 </span><span class="cov8" title="1">{
+                return fmt.Sprintf("%v %v: %d %v",
+                        r.Response.Request.Method, r.Response.Request.URL,
+                        r.Response.StatusCode, r.Errors[0])
+        }</span>
+        <span class="cov0" title="0">return fmt.Sprintf("%v %v: %d %v",
+                r.Response.Request.Method, r.Response.Request.URL,
+                r.Response.StatusCode, r.Message)</span>
+}
+</pre>
+		
+		<pre class="file" id="file21" style="display: none">package types
+
+import (
+        "context"
+        "fmt"
+        "net/http"
+        "os"
+)
+
+// Client represents the main interface for the Autotask API client
+type Client interface {
+        // Companies returns the companies service
+        Companies() CompaniesService
+
+        // Tickets returns the tickets service
+        Tickets() TicketsService
+
+        // Contacts returns the contacts service
+        Contacts() ContactsService
+
+        // Resources returns the resources service
+        Resources() ResourcesService
+
+        // SetLogLevel sets the logging level
+        SetLogLevel(level LogLevel)
+
+        // SetDebugMode enables or disables debug logging
+        SetDebugMode(debug bool)
+
+        // SetLogOutput sets the output writer for the logger
+        SetLogOutput(output *os.File)
+
+        // GetZoneInfo gets the zone information for the Autotask account
+        GetZoneInfo() (*ZoneInfo, error)
+}
+
+// CompaniesService represents the companies service interface
+type CompaniesService interface {
+        EntityService
+}
+
+// TicketsService represents the tickets service interface
+type TicketsService interface {
+        EntityService
+}
+
+// ContactsService represents the contacts service interface
+type ContactsService interface {
+        EntityService
+}
+
+// ResourcesService represents the resources service interface
+type ResourcesService interface {
+        EntityService
+}
+
+// ZoneInfo represents the zone information for an Autotask account
+type ZoneInfo struct {
+        ZoneName string `json:"zoneName"`
+        URL      string `json:"url"`
+        WebURL   string `json:"webUrl"`
+        CI       int    `json:"ci"`
+}
+
+// PageDetails represents pagination information
+type PageDetails struct {
+        PageNumber  int    `json:"pageNumber"`
+        PageSize    int    `json:"pageSize"`
+        Count       int    `json:"count"`
+        NextPageUrl string `json:"nextPageUrl"`
+        PrevPageUrl string `json:"prevPageUrl"`
+}
+
+// EntityService represents the base interface for all entity services
+type EntityService interface {
+        // Get retrieves an entity by ID
+        Get(ctx context.Context, id int64) (interface{}, error)
+
+        // Query retrieves entities matching the filter
+        Query(ctx context.Context, filter string, result interface{}) error
+
+        // Create creates a new entity
+        Create(ctx context.Context, entity interface{}) (interface{}, error)
+
+        // Update updates an existing entity
+        Update(ctx context.Context, id int64, entity interface{}) (interface{}, error)
+
+        // Delete deletes an entity
+        Delete(ctx context.Context, id int64) error
+
+        // Count returns the number of entities matching the filter
+        Count(ctx context.Context, filter string) (int, error)
+
+        // Pagination handles paginated results
+        Pagination(ctx context.Context, url string, result interface{}) error
+
+        // BatchCreate creates multiple entities in a single request
+        BatchCreate(ctx context.Context, entities []interface{}, result interface{}) error
+
+        // BatchUpdate updates multiple entities in a single request
+        BatchUpdate(ctx context.Context, entities []interface{}, result interface{}) error
+
+        // BatchDelete deletes multiple entities in a single request
+        BatchDelete(ctx context.Context, ids []int64) error
+
+        // GetNextPage gets the next page of results
+        GetNextPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error)
+
+        // GetPreviousPage gets the previous page of results
+        GetPreviousPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error)
+}
+
+// ErrorResponse represents an error response from the Autotask API
+type ErrorResponse struct {
+        Response *http.Response
+        Message  string   `json:"Message"`
+        Errors   []string `json:"errors"`
+}
+
+// Error implements the error interface
+func (r *ErrorResponse) Error() string <span class="cov0" title="0">{
+        if len(r.Errors) &gt; 0 </span><span class="cov0" title="0">{
+                return fmt.Sprintf("%v %v: %d %v",
+                        r.Response.Request.Method, r.Response.Request.URL,
+                        r.Response.StatusCode, r.Errors[0])
+        }</span>
+        <span class="cov0" title="0">return fmt.Sprintf("%v %v: %d %v",
+                r.Response.Request.Method, r.Response.Request.URL,
+                r.Response.StatusCode, r.Message)</span>
+}
+
+// LogLevel represents the level of logging
+type LogLevel int
+
+const (
+        // LogLevelDebug represents debug level logging
+        LogLevelDebug LogLevel = iota
+        // LogLevelInfo represents info level logging
+        LogLevelInfo
+        // LogLevelWarn represents warning level logging
+        LogLevelWarn
+        // LogLevelError represents error level logging
+        LogLevelError
+)
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
