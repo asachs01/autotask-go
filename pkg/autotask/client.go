@@ -297,6 +297,12 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 	c.logger.LogResponse(resp.StatusCode, respHeaders)
 
+	// Handle successful responses
+	if resp.StatusCode == http.StatusNoContent {
+		// For 204 No Content responses, there's no body to parse
+		return resp, nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, c.handleErrorResponse(resp)
 	}
@@ -312,17 +318,20 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		"body": string(body),
 	})
 
-	// If v is a pointer to []byte, store the raw body
-	if v != nil {
-		if b, ok := v.(*[]byte); ok {
-			*b = body
-			return resp, nil
-		}
+	// If v is nil, we don't need to parse the response
+	if v == nil {
+		return resp, nil
+	}
 
-		// Otherwise, unmarshal the JSON
-		if err := json.Unmarshal(body, v); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-		}
+	// If v is a pointer to []byte, store the raw body
+	if b, ok := v.(*[]byte); ok {
+		*b = body
+		return resp, nil
+	}
+
+	// Otherwise, unmarshal the JSON
+	if err := json.Unmarshal(body, v); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	return resp, nil

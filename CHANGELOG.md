@@ -20,10 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Page fetching with proper parameter handling
   - Multi-page result fetching
   - Callback-based pagination processing
+- Comprehensive test suite for entity operations including:
+  - Entity retrieval (Get)
+  - Entity querying with filters
+  - Entity creation
+  - Entity updates
+  - Entity deletion
+  - Entity counting
 
 ### Fixed
 - Fixed pagination parameter handling where parameters were incorrectly included in filter string
 - Updated FetchPage function to set page parameter in query parameters
+- Fixed client.Do method to properly handle 204 No Content responses
+- Fixed entity tests to match the actual API implementation
 
 ## [1.1.0] - 2025-03-06
 
