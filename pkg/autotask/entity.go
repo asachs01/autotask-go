@@ -270,10 +270,25 @@ func (s *BaseEntityService) GetNextPage(ctx context.Context, pageDetails PageDet
 
 // GetPreviousPage gets the previous page of results
 func (s *BaseEntityService) GetPreviousPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error) {
+	if pageDetails.PrevPageUrl == "" {
+		return nil, fmt.Errorf("no previous page available")
+	}
+
 	var result ListResponse
 	err := s.Pagination(ctx, pageDetails.PrevPageUrl, &result)
 	if err != nil {
 		return nil, err
 	}
+
 	return result.Items, nil
+}
+
+// GetEntityName returns the name of the entity
+func (s *BaseEntityService) GetEntityName() string {
+	return s.EntityName
+}
+
+// GetClient returns the client used by the service
+func (s *BaseEntityService) GetClient() Client {
+	return s.Client
 }

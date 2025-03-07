@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Nested conditions with parentheses
   - Automatic type conversion for filter values
   - Natural language filter syntax
+- Enhanced pagination support with:
+  - Iterator pattern for efficient traversal of paginated results
+  - Convenience methods for common pagination scenarios
+  - Generic type support for strongly-typed results
+  - Callback-based processing for large result sets
+  - Proper handling of Autotask API pagination requirements
+  - Improved pagination using Autotask's nextPageUrl/prevPageUrl mechanism
 
 ### Changed
 - Reorganized project structure according to Go standards
@@ -35,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed telemetry span handling
 - Fixed rate limit handling
 - Fixed linter errors related to unchecked error returns
+- Fixed page numbering in pagination results to ensure consistent and accurate page numbers
 
 ### Removed
 - Removed zone metrics (to be reimplemented with better design)

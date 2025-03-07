@@ -64,6 +64,12 @@ type EntityService interface {
 
 	// GetPreviousPage gets the previous page of results
 	GetPreviousPage(ctx context.Context, pageDetails PageDetails) ([]interface{}, error)
+
+	// GetEntityName returns the name of the entity
+	GetEntityName() string
+
+	// GetClient returns the client used by the service
+	GetClient() Client
 }
 
 // CompaniesService represents the companies service interface
