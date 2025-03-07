@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Webhook signature verification for security
 - Webhook handler registration system
 - Example code and documentation for webhooks
+- Comprehensive test suite for client functionality
+- Comprehensive test suite for webhook functionality
+- Comprehensive test suite for query builder functionality
+- Comprehensive test suite for pagination functionality including:
+  - Pagination iterator creation and usage
+  - Page fetching with proper parameter handling
+  - Multi-page result fetching
+  - Callback-based pagination processing
 
 ### Fixed
 - Fixed pagination parameter handling where parameters were incorrectly included in filter string
