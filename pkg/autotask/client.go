@@ -53,11 +53,16 @@ type client struct {
 	logger *Logger
 
 	// Entity clients
-	companiesService *companiesService
-	ticketsService   *ticketsService
-	contactsService  *contactsService
-	webhooksService  *webhookService
-	resourcesService *resourcesService
+	companiesService          *companiesService
+	ticketsService            *ticketsService
+	contactsService           *contactsService
+	webhooksService           *webhookService
+	resourcesService          *resourcesService
+	projectsService           *projectsService
+	tasksService              *tasksService
+	timeEntriesService        *timeEntriesService
+	contractsService          *contractsService
+	configurationItemsService *configurationItemsService
 }
 
 // NewClient returns a new Autotask API client
@@ -91,6 +96,21 @@ func NewClient(username, secret, integrationCode string) Client {
 	}
 	c.resourcesService = &resourcesService{
 		BaseEntityService: NewBaseEntityService(c, "Resources"),
+	}
+	c.projectsService = &projectsService{
+		BaseEntityService: NewBaseEntityService(c, "Projects"),
+	}
+	c.tasksService = &tasksService{
+		BaseEntityService: NewBaseEntityService(c, "Tasks"),
+	}
+	c.timeEntriesService = &timeEntriesService{
+		BaseEntityService: NewBaseEntityService(c, "TimeEntries"),
+	}
+	c.contractsService = &contractsService{
+		BaseEntityService: NewBaseEntityService(c, "Contracts"),
+	}
+	c.configurationItemsService = &configurationItemsService{
+		BaseEntityService: NewBaseEntityService(c, "ConfigurationItems"),
 	}
 
 	return c
@@ -342,4 +362,29 @@ func (c *client) Webhooks() WebhookService {
 // Resources returns the resources service
 func (c *client) Resources() ResourcesService {
 	return c.resourcesService
+}
+
+// Projects returns the projects service
+func (c *client) Projects() ProjectsService {
+	return c.projectsService
+}
+
+// Tasks returns the tasks service
+func (c *client) Tasks() TasksService {
+	return c.tasksService
+}
+
+// TimeEntries returns the time entries service
+func (c *client) TimeEntries() TimeEntriesService {
+	return c.timeEntriesService
+}
+
+// Contracts returns the contracts service
+func (c *client) Contracts() ContractsService {
+	return c.contractsService
+}
+
+// ConfigurationItems returns the configuration items service
+func (c *client) ConfigurationItems() ConfigurationItemsService {
+	return c.configurationItemsService
 }
