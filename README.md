@@ -134,6 +134,31 @@ The client requires three pieces of information for authentication:
 
 These can be obtained from your Autotask administrator or the Autotask API admin interface.
 
+## Webhooks
+
+The client supports receiving and processing webhook events from Autotask. Here's a basic example:
+
+```go
+// Set webhook secret for verification
+client.Webhooks().SetWebhookSecret("your-webhook-secret")
+
+// Register webhook handlers for different event types
+client.Webhooks().RegisterHandler("ticket.created", func(event *autotask.WebhookEvent) error {
+    fmt.Printf("Ticket created: ID=%d\n", event.EntityID)
+    return nil
+})
+
+// Set up HTTP server to handle webhook callbacks
+http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
+    client.Webhooks().HandleWebhook(w, r)
+})
+
+// Start the HTTP server
+http.ListenAndServe(":8080", nil)
+```
+
+For a complete example, see the [webhook example](examples/webhook).
+
 ## Examples
 
 See the [examples](examples) directory for complete examples of using the client.

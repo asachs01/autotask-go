@@ -107,6 +107,7 @@ type WebhookService interface {
 	CreateWebhook(ctx context.Context, url string, events []string) error
 	DeleteWebhook(ctx context.Context, id int64) error
 	ListWebhooks(ctx context.Context) ([]interface{}, error)
+	SetWebhookSecret(secret string)
 }
 
 // ResourcesService represents the resources service interface
