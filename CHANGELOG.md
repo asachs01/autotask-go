@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed context propagation in API calls
 - Fixed telemetry span handling
 - Fixed rate limit handling
+- Fixed linter errors related to unchecked error returns
 
 ### Removed
 - Removed zone metrics (to be reimplemented with better design)

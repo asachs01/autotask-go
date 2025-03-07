@@ -334,7 +334,11 @@ func (c *client) handleErrorResponse(resp *http.Response) error {
 	errorResp.Response = resp
 	data, err := io.ReadAll(resp.Body)
 	if err == nil && data != nil {
-		json.Unmarshal(data, &errorResp)
+		if unmarshalErr := json.Unmarshal(data, &errorResp); unmarshalErr != nil {
+			// If we can't unmarshal the error response, just log it and continue
+			// We'll still return the error response with the status code
+			c.logger.LogError(unmarshalErr)
+		}
 	}
 	return &errorResp
 }

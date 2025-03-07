@@ -341,12 +341,18 @@ func isNumeric(s string) bool {
 
 func parseInt(s string) int64 {
 	var i int64
-	fmt.Sscanf(s, "%d", &i)
+	_, err := fmt.Sscanf(s, "%d", &i)
+	if err != nil {
+		return 0
+	}
 	return i
 }
 
 func parseFloat(s string) float64 {
 	var f float64
-	fmt.Sscanf(s, "%f", &f)
+	_, err := fmt.Sscanf(s, "%f", &f)
+	if err != nil {
+		return 0
+	}
 	return f
 }
