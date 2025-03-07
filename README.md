@@ -59,6 +59,44 @@ err = client.Tickets().Query(ctx, "Status!=5 AND (Priority=1 OR AssignedResource
 if err != nil {
 	log.Fatal(err)
 }
+
+// Using pagination helpers
+// Option 1: Iterator pattern
+iterator, err := autotask.NewPaginationIterator(ctx, client.Tickets(), "Status!=5", 10)
+if err != nil {
+	log.Fatal(err)
+}
+for iterator.Next() {
+	item := iterator.Item()
+	// Process each item
+}
+
+// Option 2: Fetch a specific page
+options := autotask.PaginationOptions{
+	Page:     2,
+	PageSize: 10,
+}
+page, err := autotask.FetchPage[autotask.Ticket](
+	ctx,
+	client.Tickets(),
+	"Status!=5",
+	options,
+)
+if err != nil {
+	log.Fatal(err)
+}
+// Process page.Items
+
+// Option 3: Process pages with a callback
+err = autotask.FetchAllPagesWithCallback[autotask.Ticket](
+	ctx,
+	client.Tickets(),
+	"Status!=5",
+	func(items []autotask.Ticket, pageDetails autotask.PageDetails) error {
+		// Process each page of items
+		return nil
+	},
+)
 ```
 
 ## Features
@@ -70,6 +108,8 @@ if err != nil {
 - Configurable logging
 - Context support for timeouts and cancellation
 - Advanced query filtering with logical operators (AND, OR) and nested conditions
+- Enhanced pagination helpers with iterator patterns and convenience methods
+- Proper support for Autotask's pagination mechanism using nextPageUrl/prevPageUrl
 
 ## Supported Entities
 
@@ -104,4 +144,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

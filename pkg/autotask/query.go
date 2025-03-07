@@ -49,11 +49,12 @@ type FilterGroup struct {
 
 // EntityQueryParams represents the parameters for a query request
 type EntityQueryParams struct {
-	Filter        interface{} `json:"filter,omitempty"` // Can be QueryFilter, FilterGroup, or []QueryFilter
-	Fields        []string    `json:"fields,omitempty"`
-	MaxRecords    int         `json:"maxRecords,omitempty"`
-	IncludeFields []string    `json:"includeFields,omitempty"`
-	ExcludeFields []string    `json:"excludeFields,omitempty"`
+	Filter        []interface{} `json:"filter,omitempty"` // Array of QueryFilter or FilterGroup
+	Fields        []string      `json:"fields,omitempty"`
+	MaxRecords    int           `json:"maxRecords,omitempty"`
+	IncludeFields []string      `json:"includeFields,omitempty"`
+	ExcludeFields []string      `json:"excludeFields,omitempty"`
+	Page          int           `json:"page,omitempty"`
 }
 
 // BuildQueryString builds the query string for the request
@@ -97,9 +98,15 @@ func NewOrFilterGroup(items ...interface{}) FilterGroup {
 
 // NewEntityQueryParams creates a new query parameters object with the given filter
 func NewEntityQueryParams(filter interface{}) *EntityQueryParams {
-	return &EntityQueryParams{
-		Filter: filter,
+	params := &EntityQueryParams{
+		Filter: make([]interface{}, 0),
 	}
+
+	if filter != nil {
+		params.Filter = append(params.Filter, filter)
+	}
+
+	return params
 }
 
 // WithFields adds field selection to the query parameters
@@ -123,6 +130,12 @@ func (p *EntityQueryParams) WithExcludeFields(fields ...string) *EntityQueryPara
 // WithMaxRecords sets the maximum number of records to return
 func (p *EntityQueryParams) WithMaxRecords(max int) *EntityQueryParams {
 	p.MaxRecords = max
+	return p
+}
+
+// WithPage adds page number to the query parameters
+func (p *EntityQueryParams) WithPage(page int) *EntityQueryParams {
+	p.Page = page
 	return p
 }
 
