@@ -176,7 +176,13 @@ func (c *client) GetZoneInfo() (*ZoneInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			c.logger.Error("Failed to close response body", map[string]interface{}{
+				"error": cerr.Error(),
+			})
+		}
+	}()
 
 	// Log response headers
 	respHeaders := make(map[string]string)
@@ -288,7 +294,13 @@ func (c *client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			c.logger.Error("Failed to close response body", map[string]interface{}{
+				"error": cerr.Error(),
+			})
+		}
+	}()
 
 	// Log response headers
 	respHeaders := make(map[string]string)

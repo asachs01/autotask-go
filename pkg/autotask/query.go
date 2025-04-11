@@ -221,24 +221,14 @@ func parseSimpleFilter(filterStr string) QueryFilter {
 // parseValueWithOperator parses a value and applies the appropriate type conversion
 func parseValueWithOperator(field string, operator QueryOperator, valueStr string) QueryFilter {
 	// Handle boolean values
-	if valueStr == "true" {
+	switch valueStr {
+	case "true":
 		return NewQueryFilter(field, operator, true)
-	} else if valueStr == "false" {
+	case "false":
 		return NewQueryFilter(field, operator, false)
+	default:
+		return NewQueryFilter(field, operator, valueStr)
 	}
-
-	// Handle numeric values
-	if isNumeric(valueStr) {
-		// Try to parse as int first
-		if !strings.Contains(valueStr, ".") {
-			return NewQueryFilter(field, operator, parseInt(valueStr))
-		}
-		// If it has a decimal point, parse as float
-		return NewQueryFilter(field, operator, parseFloat(valueStr))
-	}
-
-	// Default to string
-	return NewQueryFilter(field, operator, valueStr)
 }
 
 // parseComplexFilter parses a complex filter string with logical operators
@@ -346,12 +336,6 @@ func parseNestedFilter(filterStr string) interface{} {
 }
 
 // Helper functions for type conversion
-func isNumeric(s string) bool {
-	// Check if the string is a valid number
-	_, err := fmt.Sscanf(s, "%f", &struct{}{})
-	return err == nil
-}
-
 func parseInt(s string) int64 {
 	var i int64
 	_, err := fmt.Sscanf(s, "%d", &i)

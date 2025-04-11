@@ -119,7 +119,9 @@ func (l *Logger) log(level LogLevel, msg string, fields map[string]interface{}) 
 	}
 
 	// Write to output
-	fmt.Fprintln(l.output, logMsg)
+	if _, err := fmt.Fprintln(l.output, logMsg); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write log message: %v\n", err)
+	}
 }
 
 func (l *Logger) getLevelString(level LogLevel) string {

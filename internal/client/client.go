@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/asachs01/autotask-go/pkg/autotask"
@@ -88,7 +89,12 @@ func (c *Client) do(req *http.Request, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			// Log the error but don't return it since we're in a defer
+			fmt.Fprintf(os.Stderr, "Error closing response body: %v\n", cerr)
+		}
+	}()
 
 	if resp.StatusCode >= 400 {
 		var errResp autotask.ErrorResponse

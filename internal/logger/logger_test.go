@@ -12,9 +12,14 @@ import (
 )
 
 // captureOutput captures the output of the logger
-func captureOutput(logger *Logger, fn func()) string {
+func captureOutput(t *testing.T, logger *Logger, fn func()) string {
 	// Create a pipe to capture output
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("Failed to create pipe: %v", err)
+	}
+
+	// Save original output
 	originalOutput := logger.output
 	logger.output = w
 	logger.logger.SetOutput(w)
@@ -22,14 +27,18 @@ func captureOutput(logger *Logger, fn func()) string {
 	// Execute the function
 	fn()
 
-	// Restore original output
+	// Restore original output and close the writer
 	logger.output = originalOutput
 	logger.logger.SetOutput(originalOutput)
-	w.Close()
+	if err := w.Close(); err != nil {
+		t.Errorf("Failed to close writer: %v", err)
+	}
 
 	// Read captured output
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	if _, err := io.Copy(&buf, r); err != nil {
+		t.Errorf("Failed to copy buffer: %v", err)
+	}
 
 	return buf.String()
 }
@@ -62,7 +71,7 @@ func TestLogLevels(t *testing.T) {
 	// Test Debug level
 	t.Run("Debug", func(t *testing.T) {
 		logger := New(autotask.LogLevelDebug, true)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			logger.Debug("debug message", map[string]interface{}{"key": "value"})
 		})
 
@@ -79,7 +88,7 @@ func TestLogLevels(t *testing.T) {
 
 		// Verify debug message is not logged at higher levels
 		logger = New(autotask.LogLevelInfo, false)
-		output = captureOutput(logger, func() {
+		output = captureOutput(t, logger, func() {
 			logger.Debug("debug message", map[string]interface{}{"key": "value"})
 		})
 		if output != "" {
@@ -90,7 +99,7 @@ func TestLogLevels(t *testing.T) {
 	// Test Info level
 	t.Run("Info", func(t *testing.T) {
 		logger := New(autotask.LogLevelInfo, false)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			logger.Info("info message", map[string]interface{}{"key": "value"})
 		})
 
@@ -104,7 +113,7 @@ func TestLogLevels(t *testing.T) {
 
 		// Verify info message is not logged at higher levels
 		logger = New(autotask.LogLevelWarn, false)
-		output = captureOutput(logger, func() {
+		output = captureOutput(t, logger, func() {
 			logger.Info("info message", map[string]interface{}{"key": "value"})
 		})
 		if output != "" {
@@ -115,7 +124,7 @@ func TestLogLevels(t *testing.T) {
 	// Test Warn level
 	t.Run("Warn", func(t *testing.T) {
 		logger := New(autotask.LogLevelWarn, false)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			logger.Warn("warn message", map[string]interface{}{"key": "value"})
 		})
 
@@ -129,7 +138,7 @@ func TestLogLevels(t *testing.T) {
 
 		// Verify warn message is not logged at higher levels
 		logger = New(autotask.LogLevelError, false)
-		output = captureOutput(logger, func() {
+		output = captureOutput(t, logger, func() {
 			logger.Warn("warn message", map[string]interface{}{"key": "value"})
 		})
 		if output != "" {
@@ -140,7 +149,7 @@ func TestLogLevels(t *testing.T) {
 	// Test Error level
 	t.Run("Error", func(t *testing.T) {
 		logger := New(autotask.LogLevelError, false)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			logger.Error("error message", map[string]interface{}{"key": "value"})
 		})
 
@@ -166,7 +175,7 @@ func TestSetters(t *testing.T) {
 		}
 
 		// Verify info message is not logged at error level
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			logger.Info("info message", nil)
 		})
 		if output != "" {
@@ -174,7 +183,7 @@ func TestSetters(t *testing.T) {
 		}
 
 		// Verify error message is logged
-		output = captureOutput(logger, func() {
+		output = captureOutput(t, logger, func() {
 			logger.Error("error message", nil)
 		})
 		if !strings.Contains(output, "error message") {
@@ -202,7 +211,11 @@ func TestSetters(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error creating temp file: %v", err)
 		}
-		defer os.Remove(tmpfile.Name())
+		defer func() {
+			if err := os.Remove(tmpfile.Name()); err != nil {
+				t.Errorf("Failed to remove temp file: %v", err)
+			}
+		}()
 
 		// Set output to the temp file
 		logger.SetOutput(tmpfile)
@@ -216,7 +229,9 @@ func TestSetters(t *testing.T) {
 		logger.Info("test message", nil)
 
 		// Close the file
-		tmpfile.Close()
+		if err := tmpfile.Close(); err != nil {
+			t.Errorf("Failed to close temp file: %v", err)
+		}
 
 		// Read the file
 		content, err := os.ReadFile(tmpfile.Name())
@@ -235,7 +250,7 @@ func TestSpecializedLogging(t *testing.T) {
 	// Test LogRequest
 	t.Run("LogRequest", func(t *testing.T) {
 		logger := New(autotask.LogLevelDebug, true)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			headers := map[string]string{
 				"Content-Type": "application/json",
 				"User-Agent":   "test-agent",
@@ -261,7 +276,7 @@ func TestSpecializedLogging(t *testing.T) {
 	// Test LogResponse
 	t.Run("LogResponse", func(t *testing.T) {
 		logger := New(autotask.LogLevelDebug, true)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			headers := map[string]string{
 				"Content-Type": "application/json",
 			}
@@ -280,7 +295,7 @@ func TestSpecializedLogging(t *testing.T) {
 	// Test LogError
 	t.Run("LogError", func(t *testing.T) {
 		logger := New(autotask.LogLevelDebug, true)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			err := &testError{message: "test error"}
 			logger.LogError(err)
 		})
@@ -294,7 +309,7 @@ func TestSpecializedLogging(t *testing.T) {
 	// Test LogRateLimit
 	t.Run("LogRateLimit", func(t *testing.T) {
 		logger := New(autotask.LogLevelDebug, true)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			logger.LogRateLimit(time.Second * 5)
 		})
 
@@ -313,7 +328,7 @@ func TestSpecializedLogging(t *testing.T) {
 	// Test LogZoneInfo
 	t.Run("LogZoneInfo", func(t *testing.T) {
 		logger := New(autotask.LogLevelDebug, true)
-		output := captureOutput(logger, func() {
+		output := captureOutput(t, logger, func() {
 			zoneInfo := &autotask.ZoneInfo{
 				ZoneName: "Test Zone",
 				URL:      "https://example.com",

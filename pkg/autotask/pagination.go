@@ -182,7 +182,7 @@ func DefaultPaginationOptions() PaginationOptions {
 func FetchAllPages[T any](ctx context.Context, service EntityService, filter string) ([]T, error) {
 	var allItems []T
 	var nextPageUrl string
-	var pageSize int = 100 // Default page size
+	pageSize := 100 // Default page size
 
 	// First page
 	var response struct {
@@ -258,8 +258,8 @@ func FetchAllPagesWithCallback[T any](
 	callback func(items []T, pageDetails PageDetails) error,
 ) error {
 	var nextPageUrl string
-	var pageSize int = 100 // Default page size
-	var currentPage int = 1
+	pageSize := 100  // Default page size
+	currentPage := 1 // Start with first page
 
 	// First page
 	var response struct {

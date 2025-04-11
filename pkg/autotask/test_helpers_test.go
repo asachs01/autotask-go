@@ -20,7 +20,18 @@ func TestGetLastRequest(t *testing.T) {
 	// Make a request
 	req, _ := http.NewRequest(http.MethodGet, server.Server.URL+"/test", nil)
 	client := &http.Client{}
-	client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Errorf("Failed to execute request: %v", err)
+		return
+	}
+	if resp != nil {
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Errorf("Failed to close response body: %v", err)
+			}
+		}()
+	}
 
 	// Get the last request
 	lastReq := server.GetLastRequest()
@@ -47,7 +58,18 @@ func TestGetLastRequestBody(t *testing.T) {
 	body := []byte(`{"test":"value"}`)
 	req, _ := http.NewRequest(http.MethodPost, server.Server.URL+"/test", bytes.NewBuffer(body))
 	client := &http.Client{}
-	client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Errorf("Failed to execute request: %v", err)
+		return
+	}
+	if resp != nil {
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				t.Errorf("Failed to close response body: %v", err)
+			}
+		}()
+	}
 
 	// Get the last request body
 	lastBody := server.GetLastRequestBody()

@@ -118,7 +118,9 @@ func TestDo(t *testing.T) {
 		// Return a test response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"test": "response"}`))
+		if _, err := w.Write([]byte(`{"test": "response"}`)); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -149,7 +151,9 @@ func TestDo(t *testing.T) {
 	errorServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "test error"}`))
+		if _, err := w.Write([]byte(`{"error": "test error"}`)); err != nil {
+			t.Errorf("Failed to write error response: %v", err)
+		}
 	}))
 	defer errorServer.Close()
 

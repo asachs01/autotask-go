@@ -65,7 +65,10 @@ func (m *MockServer) AddHandler(path string, handler func(w http.ResponseWriter,
 		// Read and record the request body
 		if r.Body != nil {
 			body := make([]byte, r.ContentLength)
-			r.Body.Read(body)
+			if _, err := r.Body.Read(body); err != nil {
+				m.t.Errorf("Failed to read request body: %v", err)
+				return
+			}
 			m.RequestBodies = append(m.RequestBodies, body)
 
 			// Reset the body for the handler
@@ -86,7 +89,10 @@ func (m *MockServer) AddHandler(path string, handler func(w http.ResponseWriter,
 			// Read and record the request body
 			if r.Body != nil {
 				body := make([]byte, r.ContentLength)
-				r.Body.Read(body)
+				if _, err := r.Body.Read(body); err != nil {
+					m.t.Errorf("Failed to read request body: %v", err)
+					return
+				}
 				m.RequestBodies = append(m.RequestBodies, body)
 
 				// Reset the body for the handler

@@ -454,15 +454,6 @@ func TestHandleWebhookWithNoHandlers(t *testing.T) {
 	}
 }
 
-// Mock HTTP client for testing API calls
-type mockHTTPClient struct {
-	DoFunc func(req *http.Request) (*http.Response, error)
-}
-
-func (m *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return m.DoFunc(req)
-}
-
 // mockClient creates a client with a mock HTTP client for testing
 func createMockClient(doFunc func(req *http.Request) (*http.Response, error)) *client {
 	mockClient := &client{

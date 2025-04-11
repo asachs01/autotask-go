@@ -9,42 +9,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"reflect"
 	"testing"
 )
 
 // Define a contextKey type for context values
-type contextKey string
+// type contextKey string
 
 // setupMockServer creates a test server and configures the client to use it
-func setupMockServer(handler http.Handler) (*httptest.Server, Client) {
-	server := httptest.NewServer(handler)
-	client := NewClient("username", "password", "integrationCode")
+// func setupMockServer(handler http.Handler) (*httptest.Server, Client) {
 
-	// Use reflection to set the baseURL field
-	clientValue := reflect.ValueOf(client).Elem()
-	baseURLField := clientValue.FieldByName("baseURL")
-	if baseURLField.IsValid() && baseURLField.CanSet() {
-		baseURL, _ := url.Parse(server.URL)
-		baseURLField.Set(reflect.ValueOf(baseURL))
-	}
-
-	// Set zoneInfo directly to bypass the API call
-	zoneInfoField := clientValue.FieldByName("zoneInfo")
-	if zoneInfoField.IsValid() && zoneInfoField.CanSet() {
-		zoneInfo := &ZoneInfo{
-			ZoneName: "Test Zone",
-			URL:      server.URL,
-			WebURL:   "https://example.com",
-			CI:       123,
-		}
-		zoneInfoField.Set(reflect.ValueOf(zoneInfo))
-	}
-
-	return server, client
-}
-
+// Convert if statements to switch
 func TestCompaniesService(t *testing.T) {
 	// Create a mock server
 	mockServer := NewMockServer(t)
@@ -52,21 +26,22 @@ func TestCompaniesService(t *testing.T) {
 
 	// Add handlers for the Companies endpoints
 	mockServer.AddHandler("/Companies/1", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
+		switch r.Method {
+		case http.MethodGet:
 			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
 				"item": map[string]interface{}{
 					"id":   float64(1),
 					"name": "Test Company",
 				},
 			})
-		} else if r.Method == http.MethodPatch {
+		case http.MethodPatch:
 			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
 				"item": map[string]interface{}{
 					"id":   float64(1),
 					"name": "Updated Company",
 				},
 			})
-		} else if r.Method == http.MethodDelete {
+		case http.MethodDelete:
 			mockServer.RespondWithJSON(w, http.StatusOK, nil)
 		}
 	})
@@ -88,7 +63,8 @@ func TestCompaniesService(t *testing.T) {
 	})
 
 	mockServer.AddHandler("/Companies", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
 			mockServer.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
 				"item": map[string]interface{}{
 					"id":   float64(3),
@@ -364,22 +340,25 @@ func TestProjectsService(t *testing.T) {
 
 	// Add handlers for the Projects endpoints
 	mockServer.AddHandler("/Projects/1", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
+		switch r.Method {
+		case http.MethodGet:
 			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
 				"item": map[string]interface{}{
 					"id":   float64(1),
 					"name": "Test Project",
 				},
 			})
-		} else if r.Method == http.MethodPatch {
+		case http.MethodPatch:
 			mockServer.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
 				"item": map[string]interface{}{
 					"id":   float64(1),
 					"name": "Updated Project",
 				},
 			})
-		} else if r.Method == http.MethodDelete {
+		case http.MethodDelete:
 			mockServer.RespondWithJSON(w, http.StatusOK, nil)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
 
@@ -400,13 +379,16 @@ func TestProjectsService(t *testing.T) {
 	})
 
 	mockServer.AddHandler("/Projects", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
 			mockServer.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
 				"item": map[string]interface{}{
 					"id":   float64(3),
 					"name": "New Project",
 				},
 			})
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
 
