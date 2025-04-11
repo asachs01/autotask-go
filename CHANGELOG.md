@@ -12,10 +12,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Webhook signature verification for security
 - Webhook handler registration system
 - Example code and documentation for webhooks
+- Comprehensive test suite for client functionality
+- Comprehensive test suite for webhook functionality
+- Comprehensive test suite for query builder functionality
+- Comprehensive test suite for pagination functionality including:
+  - Pagination iterator creation and usage
+  - Page fetching with proper parameter handling
+  - Multi-page result fetching
+  - Callback-based pagination processing
+- Comprehensive test suite for entity operations including:
+  - Entity retrieval (Get)
+  - Entity querying with filters
+  - Entity creation
+  - Entity updates
+  - Entity deletion
+  - Entity counting
 
 ### Fixed
 - Fixed pagination parameter handling where parameters were incorrectly included in filter string
 - Updated FetchPage function to set page parameter in query parameters
+- Fixed client.Do method to properly handle 204 No Content responses
+- Fixed entity tests to match the actual API implementation
 
 ## [1.1.0] - 2025-03-06
 
