@@ -2,10 +2,14 @@
 
 A Go client library for the Autotask PSA REST API.
 
+## Requirements
+
+- Go 1.22 or higher
+
 ## Installation
 
 ```bash
-go get github.com/asachs01/autotask-go
+go get github.com/asachs01/autotask-go@latest
 ```
 
 ## Usage
@@ -20,96 +24,58 @@ client := autotask.NewClient(
 	os.Getenv("AUTOTASK_INTEGRATION_CODE"),
 )
 
+// Optional: Configure logging
+client.SetLogLevel(autotask.LogLevelDebug)
+client.SetDebugMode(true)
+
 // Create a context
 ctx := context.Background()
 
-// Get a company by ID
-company, err := client.Companies().Get(ctx, 0)
-if err != nil {
-	log.Fatal(err)
-}
-
-// Query active companies
+// Query companies
 var companyResponse struct {
-	Items       []autotask.Company   `json:"items"`
-	PageDetails autotask.PageDetails `json:"pageDetails"`
+	Items []map[string]interface{} `json:"items"`
 }
-err = client.Companies().Query(ctx, "", &companyResponse)
+err := client.Companies().Query(ctx, "Status!=5", &companyResponse)
 if err != nil {
 	log.Fatal(err)
 }
 
-// Query tickets with a filter
-var ticketResponse struct {
-	Items       []autotask.Ticket    `json:"items"`
-	PageDetails autotask.PageDetails `json:"pageDetails"`
-}
-err = client.Tickets().Query(ctx, "Status!=5", &ticketResponse)
+// Query with date filter
+since := time.Now().AddDate(0, -1, 0) // 1 month ago
+tickets, err := client.QueryWithDateFilter(ctx, "Tickets", "LastActivityDate", since)
 if err != nil {
 	log.Fatal(err)
 }
 
-// Query with complex filters
-var highPriorityTickets struct {
-	Items       []autotask.Ticket    `json:"items"`
-	PageDetails autotask.PageDetails `json:"pageDetails"`
-}
-// Find active tickets that are either high priority or assigned to a specific resource
-err = client.Tickets().Query(ctx, "Status!=5 AND (Priority=1 OR AssignedResourceID=123)", &highPriorityTickets)
+// Batch get entities
+ids := []int64{1, 2, 3, 4, 5}
+entities, err := client.BatchGetEntities(ctx, "Companies", ids, 50)
 if err != nil {
 	log.Fatal(err)
 }
 
-// Using pagination helpers
-// Option 1: Iterator pattern
-iterator, err := autotask.NewPaginationIterator(ctx, client.Tickets(), "Status!=5", 10)
+// Query with ID range
+startID := int64(1000)
+endID := int64(2000)
+rangeEntities, err := client.QueryIDRange(ctx, "Tickets", startID, endID)
 if err != nil {
 	log.Fatal(err)
 }
-for iterator.Next() {
-	item := iterator.Item()
-	// Process each item
-}
-
-// Option 2: Fetch a specific page
-options := autotask.PaginationOptions{
-	Page:     2,
-	PageSize: 10,
-}
-page, err := autotask.FetchPage[autotask.Ticket](
-	ctx,
-	client.Tickets(),
-	"Status!=5",
-	options,
-)
-if err != nil {
-	log.Fatal(err)
-}
-// Process page.Items
-
-// Option 3: Process pages with a callback
-err = autotask.FetchAllPagesWithCallback[autotask.Ticket](
-	ctx,
-	client.Tickets(),
-	"Status!=5",
-	func(items []autotask.Ticket, pageDetails autotask.PageDetails) error {
-		// Process each page of items
-		return nil
-	},
-)
 ```
 
 ## Features
 
 - Full support for Autotask PSA REST API v1.0
 - Automatic zone detection and routing
-- Rate limiting support
-- Pagination support
-- Configurable logging
+- Rate limiting (default: 60 requests per minute)
+- Configurable logging with debug mode
 - Context support for timeouts and cancellation
-- Advanced query filtering with logical operators (AND, OR) and nested conditions
-- Enhanced pagination helpers with iterator patterns and convenience methods
-- Proper support for Autotask's pagination mechanism using nextPageUrl/prevPageUrl
+- Query helpers for common operations:
+  - Date-based filtering
+  - Empty filters
+  - Batch entity retrieval
+  - ID range queries
+- Support for all major Autotask entities
 
 ## Supported Entities
 
@@ -134,30 +100,18 @@ The client requires three pieces of information for authentication:
 
 These can be obtained from your Autotask administrator or the Autotask API admin interface.
 
-## Webhooks
+## Rate Limiting
 
-The client supports receiving and processing webhook events from Autotask. Here's a basic example:
+The client includes built-in rate limiting to prevent API throttling. By default, it's set to 60 requests per minute, which can be adjusted if needed.
 
-```go
-// Set webhook secret for verification
-client.Webhooks().SetWebhookSecret("your-webhook-secret")
+## Logging
 
-// Register webhook handlers for different event types
-client.Webhooks().RegisterHandler("ticket.created", func(event *autotask.WebhookEvent) error {
-    fmt.Printf("Ticket created: ID=%d\n", event.EntityID)
-    return nil
-})
+The client provides configurable logging with different log levels:
+- Info (default)
+- Debug
+- Error
 
-// Set up HTTP server to handle webhook callbacks
-http.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-    client.Webhooks().HandleWebhook(w, r)
-})
-
-// Start the HTTP server
-http.ListenAndServe(":8080", nil)
-```
-
-For a complete example, see the [webhook example](examples/webhook).
+You can enable debug mode for more detailed logging and set custom log outputs.
 
 ## Examples
 
@@ -165,7 +119,7 @@ See the [examples](examples) directory for complete examples of using the client
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
