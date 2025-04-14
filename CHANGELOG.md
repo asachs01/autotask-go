@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.2.1] - 2025-03-20
+
+### Fixed
+- Fixed logger method calls in queryWithEmptyFilter to use correct method signature instead of chaining syntax
+- Improved logging implementation to properly handle structured logging fields 
+
 ## [1.2.0] - 2025-03-19
 
 ### Added
@@ -95,4 +102,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release
 - Basic Autotask API client implementation
 - Support for Companies, Tickets, and Contacts entities
-- Basic error handling and logging 
+- Basic error handling and logging
