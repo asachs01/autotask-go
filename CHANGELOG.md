@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-03-19
+
 ### Added
 - Complete webhook implementation with proper event handling
 - Webhook signature verification for security
@@ -33,6 +35,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated FetchPage function to set page parameter in query parameters
 - Fixed client.Do method to properly handle 204 No Content responses
 - Fixed entity tests to match the actual API implementation
+- Fixed unchecked error returns in response body closing operations
+- Fixed unchecked error returns in test write operations
+- Fixed unchecked error returns in file operations and logging
+- Fixed error handling in HTTP response body management
+- Improved error handling in test helpers and mock servers
+
+### Changed
+- Optimized code structure by converting if-else chains to switch statements
+- Removed redundant type declarations for better code clarity
+- Cleaned up unused code and functions
+- Enhanced test reliability with proper error checking
 
 ## [1.1.0] - 2025-03-06
 
@@ -76,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Removed zone metrics (to be reimplemented with better design)
 
-## [1.0.0] - 2024-03-05
+## [1.0.0] - 2025-03-05
 
 ### Added
 - Initial release

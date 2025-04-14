@@ -413,3 +413,57 @@ func (c *client) Contracts() ContractsService {
 func (c *client) ConfigurationItems() ConfigurationItemsService {
 	return c.configurationItemsService
 }
+
+// queryWithEmptyFilter is a helper method to query an entity with an empty filter array
+func (c *client) queryWithEmptyFilter(ctx context.Context, entityName string) ([]map[string]interface{}, error) {
+	c.logger.Info("Querying with empty filter", map[string]interface{}{
+		"entity": entityName,
+	})
+
+	url := entityName + "/query"
+
+	// Use a simpler filter structure that just checks for ID existence
+	reqBody := map[string]interface{}{
+		"MaxRecords": 500,
+		"filter": []map[string]interface{}{
+			{
+				"field": "id",
+				"op":    "exist",
+			},
+		},
+	}
+
+	reqBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	c.logger.Debug("Query with empty filter", map[string]interface{}{
+		"request_body": string(reqBytes),
+		"entity":       entityName,
+	})
+
+	req, err := c.NewRequest(ctx, "POST", url, bytes.NewBuffer(reqBytes))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Add special headers that might be required
+	req.Header.Set("Content-Type", "application/json")
+
+	var response struct {
+		Items []map[string]interface{} `json:"items"`
+	}
+
+	_, err = c.Do(req, &response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+
+	c.logger.Info("Retrieved entities using query with empty filter", map[string]interface{}{
+		"count":  len(response.Items),
+		"entity": entityName,
+	})
+
+	return response.Items, nil
+}
