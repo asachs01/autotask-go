@@ -8,11 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
-## [1.2.1] - 2025-03-20
+## [1.2.1] - 2025-04-14
 
 ### Fixed
 - Fixed logger method calls in queryWithEmptyFilter to use correct method signature instead of chaining syntax
 - Improved logging implementation to properly handle structured logging fields 
+
+### Changed
+- Removed unused duplicate queryWithEmptyFilter function in favor of QueryWithEmptyFilter in query_helpers.go
 
 ## [1.2.0] - 2025-03-19
 
