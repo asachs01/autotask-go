@@ -1,16 +1,38 @@
 package autotask
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// FilterItem represents a single condition in an Autotask API filter
+type FilterItem struct {
+	Field string      `json:"field"`
+	Op    string      `json:"op"`
+	Value interface{} `json:"value"`
+}
+
+// FilterCondition represents a filter condition that can contain multiple items
+type FilterCondition struct {
+	Op    string       `json:"op"`
+	Items []FilterItem `json:"items"`
+}
+
+// QueryParams represents the parameters for an Autotask API query
+type QueryParams struct {
+	MaxRecords int               `json:"MaxRecords"`
+	Filter     []FilterCondition `json:"filter"` // Note: lowercase 'filter' to match API
+}
 
 // AssertNotEqual asserts that two values are not equal
 func AssertNotEqual(t *testing.T, expected, actual interface{}, message string) {
@@ -255,210 +277,140 @@ func TestErrorResponse(t *testing.T) {
 	AssertContains(t, errorMsg, "Error 1", "error message should contain the first error")
 }
 
-func TestQueryEndpoint(t *testing.T) {
-	tests := []struct {
-		name       string
-		setupTest  func() (*httptest.Server, Client)
-		testQuery  func(Client) error
-		wantFilter map[string]interface{}
-	}{
-		{
-			name: "empty filter query",
-			setupTest: func() (*httptest.Server, Client) {
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					// Verify the request method
-					assert.Equal(t, http.MethodPost, r.Method)
+// testClient implements the Client interface for testing
+type testClient struct {
+	httpClient *http.Client
+	baseURL    *url.URL
+	UserAgent  string
+}
 
-					// Verify the endpoint
-					assert.Equal(t, "/ATServicesRest/V1.0/TestEntity/query", r.URL.Path)
-
-					// Parse and verify the request body
-					var requestBody map[string]interface{}
-					err := json.NewDecoder(r.Body).Decode(&requestBody)
-					require.NoError(t, err)
-
-					// Verify the filter structure
-					filters, ok := requestBody["filter"].([]interface{})
-					require.True(t, ok, "filter should be an array")
-					require.Len(t, filters, 1, "filter should have one item")
-
-					filterObj, ok := filters[0].(map[string]interface{})
-					require.True(t, ok, "filter item should be an object")
-					assert.Equal(t, "and", filterObj["op"])
-
-					items, ok := filterObj["items"].([]interface{})
-					require.True(t, ok, "items should be an array")
-					require.Len(t, items, 1, "items should have one item")
-
-					item, ok := items[0].(map[string]interface{})
-					require.True(t, ok, "item should be an object")
-					assert.Equal(t, "exist", item["op"])
-					assert.Equal(t, "id", item["field"])
-
-					// Return a mock response
-					response := map[string]interface{}{
-						"items": []map[string]interface{}{
-							{"id": 1, "name": "Test Item 1"},
-							{"id": 2, "name": "Test Item 2"},
-						},
-					}
-					w.Header().Set("Content-Type", "application/json")
-					err = json.NewEncoder(w).Encode(response)
-					require.NoError(t, err)
-				}))
-
-				// Create a test client
-				client := NewClient(
-					"test-user",
-					"test-secret",
-					"test-integration-code",
-				)
-
-				return server, client
-			},
-			testQuery: func(client Client) error {
-				ctx := context.Background()
-				var result struct {
-					Items []map[string]interface{} `json:"items"`
-				}
-				req, err := client.NewRequest(ctx, http.MethodPost, "/ATServicesRest/V1.0/TestEntity/query", map[string]interface{}{
-					"filter": []map[string]interface{}{
-						{
-							"op": "and",
-							"items": []map[string]interface{}{
-								{
-									"op":    "exist",
-									"field": "id",
-								},
-							},
-						},
-					},
-				})
-				if err != nil {
-					return err
-				}
-
-				_, err = client.Do(req, &result)
-				if err != nil {
-					return err
-				}
-
-				require.Len(t, result.Items, 2)
-				assert.Equal(t, float64(1), result.Items[0]["id"])
-				assert.Equal(t, "Test Item 1", result.Items[0]["name"])
-				assert.Equal(t, float64(2), result.Items[1]["id"])
-				assert.Equal(t, "Test Item 2", result.Items[1]["name"])
-
-				return nil
-			},
-		},
-		{
-			name: "date filter query",
-			setupTest: func() (*httptest.Server, Client) {
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					// Verify the request method
-					assert.Equal(t, http.MethodPost, r.Method)
-
-					// Verify the endpoint
-					assert.Equal(t, "/ATServicesRest/V1.0/TestEntity/query", r.URL.Path)
-
-					// Parse and verify the request body
-					var requestBody map[string]interface{}
-					err := json.NewDecoder(r.Body).Decode(&requestBody)
-					require.NoError(t, err)
-
-					// Verify the filter structure
-					filters, ok := requestBody["filter"].([]interface{})
-					require.True(t, ok, "filter should be an array")
-					require.Len(t, filters, 1, "filter should have one item")
-
-					filterObj, ok := filters[0].(map[string]interface{})
-					require.True(t, ok, "filter item should be an object")
-					assert.Equal(t, "and", filterObj["op"])
-
-					items, ok := filterObj["items"].([]interface{})
-					require.True(t, ok, "items should be an array")
-					require.Len(t, items, 1, "items should have one item")
-
-					item, ok := items[0].(map[string]interface{})
-					require.True(t, ok, "item should be an object")
-					assert.Equal(t, "gte", item["op"])
-					assert.Equal(t, "testDate", item["field"])
-
-					// Verify the date format
-					dateStr, ok := item["value"].(string)
-					require.True(t, ok, "value should be a string")
-					_, err = time.Parse(time.RFC3339, dateStr)
-					require.NoError(t, err)
-
-					// Return a mock response
-					response := map[string]interface{}{
-						"items": []map[string]interface{}{
-							{"id": 1, "testDate": "2024-01-01T00:00:00Z"},
-							{"id": 2, "testDate": "2024-01-02T00:00:00Z"},
-						},
-					}
-					w.Header().Set("Content-Type", "application/json")
-					err = json.NewEncoder(w).Encode(response)
-					require.NoError(t, err)
-				}))
-
-				// Create a test client
-				client := NewClient(
-					"test-user",
-					"test-secret",
-					"test-integration-code",
-				)
-
-				return server, client
-			},
-			testQuery: func(client Client) error {
-				ctx := context.Background()
-				since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-				var result struct {
-					Items []map[string]interface{} `json:"items"`
-				}
-				req, err := client.NewRequest(ctx, http.MethodPost, "/ATServicesRest/V1.0/TestEntity/query", map[string]interface{}{
-					"filter": []map[string]interface{}{
-						{
-							"op": "and",
-							"items": []map[string]interface{}{
-								{
-									"op":    "gte",
-									"field": "testDate",
-									"value": since.Format(time.RFC3339),
-								},
-							},
-						},
-					},
-				})
-				if err != nil {
-					return err
-				}
-
-				_, err = client.Do(req, &result)
-				if err != nil {
-					return err
-				}
-
-				require.Len(t, result.Items, 2)
-				assert.Equal(t, float64(1), result.Items[0]["id"])
-				assert.Equal(t, "2024-01-01T00:00:00Z", result.Items[0]["testDate"])
-				assert.Equal(t, float64(2), result.Items[1]["id"])
-				assert.Equal(t, "2024-01-02T00:00:00Z", result.Items[1]["testDate"])
-
-				return nil
-			},
-		},
+func newTestClient(serverURL string) *client {
+	u, err := url.Parse(serverURL)
+	if err != nil {
+		panic(err)
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			server, client := tt.setupTest()
-			defer server.Close()
-
-			err := tt.testQuery(client)
-			require.NoError(t, err)
-		})
+	return &client{
+		httpClient: &http.Client{},
+		baseURL:    u,
+		UserAgent:  DefaultUserAgent,
 	}
+}
+
+func (c *testClient) NewRequest(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
+	u := c.baseURL.JoinPath(path)
+	var buf io.Reader
+	if body != nil {
+		b, err := json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		buf = bytes.NewReader(b)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", c.UserAgent)
+	return req, nil
+}
+
+func (c *testClient) Do(req *http.Request) (*http.Response, error) {
+	return c.httpClient.Do(req)
+}
+
+func (c *testClient) GetZoneInfo() string {
+	return "America/Los_Angeles"
+}
+
+func (c *testClient) SetLogLevel(level LogLevel) {}
+
+func (c *testClient) SetDebugMode(debug bool) {}
+
+func (c *testClient) SetLogOutput(w io.Writer) {}
+
+func (c *testClient) Companies() CompaniesService                   { return nil }
+func (c *testClient) Tickets() TicketsService                       { return nil }
+func (c *testClient) Contacts() ContactsService                     { return nil }
+func (c *testClient) TimeEntries() TimeEntriesService               { return nil }
+func (c *testClient) Resources() ResourcesService                   { return nil }
+func (c *testClient) Contracts() ContractsService                   { return nil }
+func (c *testClient) Projects() ProjectsService                     { return nil }
+func (c *testClient) Tasks() TasksService                           { return nil }
+func (c *testClient) Webhooks() WebhookService                      { return nil }
+func (c *testClient) ConfigurationItems() ConfigurationItemsService { return nil }
+
+func TestQueryWithEmptyFilter(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		assert.Equal(t, "/ATServicesRest/V1.0/Companies/query", r.URL.Path)
+
+		var requestBody map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&requestBody)
+		require.NoError(t, err)
+
+		filter := requestBody["Filter"].(map[string]interface{})
+		assert.Equal(t, "gt", filter["Op"])
+		assert.Equal(t, "id", filter["Field"])
+		assert.Equal(t, float64(0), filter["Value"])
+		assert.Equal(t, false, filter["UDF"])
+		assert.Empty(t, filter["Items"])
+
+		response := map[string]interface{}{
+			"items": []map[string]interface{}{
+				{"id": 1, "name": "Company 1"},
+				{"id": 2, "name": "Company 2"},
+			},
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL)
+	ctx := context.Background()
+	result, err := client.QueryWithEmptyFilter(ctx, "Companies")
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestQueryWithDateFilter(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		assert.Equal(t, "/ATServicesRest/V1.0/Companies/query", r.URL.Path)
+
+		var requestBody map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&requestBody)
+		require.NoError(t, err)
+
+		filter := requestBody["Filter"].(map[string]interface{})
+		assert.Equal(t, "gt", filter["Op"])
+		assert.Equal(t, "lastActivityDate", filter["Field"])
+		assert.NotEmpty(t, filter["Value"])
+		assert.Equal(t, false, filter["UDF"])
+		assert.Empty(t, filter["Items"])
+
+		response := map[string]interface{}{
+			"items": []map[string]interface{}{
+				{"id": 1, "name": "Company 1", "lastActivityDate": "2023-01-01T00:00:00Z"},
+				{"id": 2, "name": "Company 2", "lastActivityDate": "2023-01-02T00:00:00Z"},
+			},
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL)
+	ctx := context.Background()
+	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	result, err := client.QueryWithDateFilter(ctx, "Companies", "lastActivityDate", date)
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func parseURL(s string) *url.URL {
+	u, err := url.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+	return u
 }

@@ -8,6 +8,25 @@ import (
 	"os"
 )
 
+// FilterItem represents a single condition in an Autotask API filter
+type FilterItem struct {
+	Field string      `json:"field"`
+	Op    string      `json:"op"`
+	Value interface{} `json:"value"`
+}
+
+// FilterCondition represents a filter condition that can contain multiple items
+type FilterCondition struct {
+	Op    string       `json:"op"`
+	Items []FilterItem `json:"items"`
+}
+
+// QueryParams represents the parameters for an Autotask API query
+type QueryParams struct {
+	MaxRecords int               `json:"MaxRecords"`
+	Filter     []FilterCondition `json:"filter"` // Note: lowercase 'filter' to match API
+}
+
 // LogLevel represents the logging level
 type LogLevel int
 
