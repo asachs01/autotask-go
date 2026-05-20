@@ -16,7 +16,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version-file: 'go.mod'
           cache: false
 
       - name: Check formatting
@@ -33,4 +33,7 @@ jobs:
           version: latest
 
       - name: Build
-        run: go build -v ./... 
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...

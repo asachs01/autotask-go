@@ -467,9 +467,12 @@ func TestEntityPagination(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 
 		switch r.URL.Path {
-		case "/pagination-test":
-			// Handle pagination test
-			if _, err := w.Write([]byte(`{"items": []}`)); err != nil {
+		case "/pagination-test", "/next-page":
+			if _, err := w.Write([]byte(`{"items": [{"id": 2, "name": "Item 2"}], "pageDetails": {"pageNumber": 1, "pageSize": 10, "count": 20, "nextPageUrl": "/next-page", "prevPageUrl": ""}}`)); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
+		case "/prev-page":
+			if _, err := w.Write([]byte(`{"items": [{"id": 1, "name": "Item 1"}], "pageDetails": {"pageNumber": 1, "pageSize": 10, "count": 20, "nextPageUrl": "", "prevPageUrl": ""}}`)); err != nil {
 				t.Errorf("Failed to write response: %v", err)
 			}
 		default:

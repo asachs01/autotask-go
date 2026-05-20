@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Resolved build and test failures so `go build ./...` and `go test ./...` pass cleanly
+- Restored the `TestEntityPagination` mock server responses so the pagination, next-page, and previous-page subtests assert against real data
+
+### Changed
+- CI workflow now derives the Go version from `go.mod` (`go-version-file`) instead of the hardcoded `1.21`, keeping CI consistent with the module's `go 1.22.0` requirement
+- Added a `go test ./...` step to the CI workflow so tests run on every push and pull request
 
 ## [1.2.1] - 2025-04-14
 

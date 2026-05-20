@@ -1,42 +1,19 @@
 package autotask
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 )
 
-// FilterItem represents a single condition in an Autotask API filter
-type FilterItem struct {
-	Field string      `json:"field"`
-	Op    string      `json:"op"`
-	Value interface{} `json:"value"`
-}
-
-// FilterCondition represents a filter condition that can contain multiple items
-type FilterCondition struct {
-	Op    string       `json:"op"`
-	Items []FilterItem `json:"items"`
-}
-
-// QueryParams represents the parameters for an Autotask API query
-type QueryParams struct {
-	MaxRecords int               `json:"MaxRecords"`
-	Filter     []FilterCondition `json:"filter"` // Note: lowercase 'filter' to match API
-}
+// FilterItem, FilterCondition, and QueryParams are defined in types.go.
 
 // Query executes a query against the Autotask API
 func (c *client) Query(ctx context.Context, entityName string, params interface{}, response interface{}) error {
 	url := entityName + "/query"
 
-	reqBytes, err := json.Marshal(params)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request body: %w", err)
-	}
-
-	req, err := c.NewRequest(ctx, "POST", url, bytes.NewBuffer(reqBytes))
+	// NewRequest JSON-encodes the body itself, so params is passed through directly.
+	req, err := c.NewRequest(ctx, "POST", url, params)
 	if err != nil {
 		return err
 	}
