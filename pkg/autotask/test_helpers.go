@@ -3,6 +3,7 @@ package autotask
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -64,8 +65,8 @@ func (m *MockServer) AddHandler(path string, handler func(w http.ResponseWriter,
 
 		// Read and record the request body
 		if r.Body != nil {
-			body := make([]byte, r.ContentLength)
-			if _, err := r.Body.Read(body); err != nil {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
 				m.t.Errorf("Failed to read request body: %v", err)
 				return
 			}

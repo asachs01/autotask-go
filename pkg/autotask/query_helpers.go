@@ -1,23 +1,19 @@
 package autotask
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 )
+
+// FilterItem, FilterCondition, and QueryParams are defined in types.go.
 
 // Query executes a query against the Autotask API
 func (c *client) Query(ctx context.Context, entityName string, params interface{}, response interface{}) error {
 	url := entityName + "/query"
 
-	reqBytes, err := json.Marshal(params)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request body: %w", err)
-	}
-
-	req, err := c.NewRequest(ctx, "POST", url, bytes.NewBuffer(reqBytes))
+	// NewRequest JSON-encodes the body itself, so params is passed through directly.
+	req, err := c.NewRequest(ctx, "POST", url, params)
 	if err != nil {
 		return err
 	}
@@ -34,12 +30,18 @@ func (c *client) Query(ctx context.Context, entityName string, params interface{
 
 // QueryWithDateFilter executes a query with a date-based filter
 func (c *client) QueryWithDateFilter(ctx context.Context, entityName, fieldName string, since time.Time) ([]map[string]interface{}, error) {
-	reqBody := map[string]interface{}{
-		"filter": []map[string]interface{}{
+	params := QueryParams{
+		MaxRecords: 500,
+		Filter: []FilterCondition{
 			{
-				"op":    "gte",
-				"field": fieldName,
-				"value": since.Format(time.RFC3339),
+				Op: "and",
+				Items: []FilterItem{
+					{
+						Field: fieldName,
+						Op:    "gt",
+						Value: since.Format(time.RFC3339),
+					},
+				},
 			},
 		},
 	}
@@ -48,7 +50,7 @@ func (c *client) QueryWithDateFilter(ctx context.Context, entityName, fieldName 
 		Items []map[string]interface{} `json:"items"`
 	}
 
-	if err := c.Query(ctx, entityName, reqBody, &response); err != nil {
+	if err := c.Query(ctx, entityName, params, &response); err != nil {
 		return nil, fmt.Errorf("failed to execute date filter query: %w", err)
 	}
 
@@ -57,11 +59,18 @@ func (c *client) QueryWithDateFilter(ctx context.Context, entityName, fieldName 
 
 // QueryWithEmptyFilter executes a query without any filter
 func (c *client) QueryWithEmptyFilter(ctx context.Context, entityName string) ([]map[string]interface{}, error) {
-	reqBody := map[string]interface{}{
-		"filter": []map[string]interface{}{
+	params := QueryParams{
+		MaxRecords: 500,
+		Filter: []FilterCondition{
 			{
-				"op":    "exist",
-				"field": "id",
+				Op: "and",
+				Items: []FilterItem{
+					{
+						Field: "id",
+						Op:    "gt",
+						Value: 0,
+					},
+				},
 			},
 		},
 	}
@@ -70,7 +79,7 @@ func (c *client) QueryWithEmptyFilter(ctx context.Context, entityName string) ([
 		Items []map[string]interface{} `json:"items"`
 	}
 
-	if err := c.Query(ctx, entityName, reqBody, &response); err != nil {
+	if err := c.Query(ctx, entityName, params, &response); err != nil {
 		return nil, fmt.Errorf("failed to execute empty filter query: %w", err)
 	}
 
@@ -95,12 +104,18 @@ func (c *client) BatchGetEntities(ctx context.Context, entityName string, ids []
 		}
 		batch := ids[i:end]
 
-		reqBody := map[string]interface{}{
-			"filter": []map[string]interface{}{
+		params := QueryParams{
+			MaxRecords: 500,
+			Filter: []FilterCondition{
 				{
-					"op":    "in",
-					"field": "id",
-					"value": batch,
+					Op: "and",
+					Items: []FilterItem{
+						{
+							Field: "id",
+							Op:    "in",
+							Value: batch,
+						},
+					},
 				},
 			},
 		}
@@ -109,7 +124,7 @@ func (c *client) BatchGetEntities(ctx context.Context, entityName string, ids []
 			Items []map[string]interface{} `json:"items"`
 		}
 
-		if err := c.Query(ctx, entityName, reqBody, &response); err != nil {
+		if err := c.Query(ctx, entityName, params, &response); err != nil {
 			return nil, fmt.Errorf("failed to execute batch query: %w", err)
 		}
 
@@ -121,17 +136,23 @@ func (c *client) BatchGetEntities(ctx context.Context, entityName string, ids []
 
 // QueryIDRange executes a query to retrieve entities within a specific ID range
 func (c *client) QueryIDRange(ctx context.Context, entityName string, startID, endID int64) ([]map[string]interface{}, error) {
-	reqBody := map[string]interface{}{
-		"filter": []map[string]interface{}{
+	params := QueryParams{
+		MaxRecords: 500,
+		Filter: []FilterCondition{
 			{
-				"op":    "gte",
-				"field": "id",
-				"value": startID,
-			},
-			{
-				"op":    "lte",
-				"field": "id",
-				"value": endID,
+				Op: "and",
+				Items: []FilterItem{
+					{
+						Field: "id",
+						Op:    "gte",
+						Value: startID,
+					},
+					{
+						Field: "id",
+						Op:    "lte",
+						Value: endID,
+					},
+				},
 			},
 		},
 	}
@@ -140,7 +161,7 @@ func (c *client) QueryIDRange(ctx context.Context, entityName string, startID, e
 		Items []map[string]interface{} `json:"items"`
 	}
 
-	if err := c.Query(ctx, entityName, reqBody, &response); err != nil {
+	if err := c.Query(ctx, entityName, params, &response); err != nil {
 		return nil, fmt.Errorf("failed to execute ID range query: %w", err)
 	}
 
