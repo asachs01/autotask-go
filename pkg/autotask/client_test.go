@@ -1,10 +1,8 @@
 package autotask
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -258,13 +256,6 @@ func TestErrorResponse(t *testing.T) {
 	AssertContains(t, errorMsg, "Error 1", "error message should contain the first error")
 }
 
-// testClient implements the Client interface for testing
-type testClient struct {
-	httpClient *http.Client
-	baseURL    *url.URL
-	UserAgent  string
-}
-
 func newTestClient(serverURL string) *client {
 	u, err := url.Parse(serverURL)
 	if err != nil {
@@ -278,50 +269,6 @@ func newTestClient(serverURL string) *client {
 		logger:      New(LogLevelInfo, false),
 	}
 }
-
-func (c *testClient) NewRequest(ctx context.Context, method, path string, body interface{}) (*http.Request, error) {
-	u := c.baseURL.JoinPath(path)
-	var buf io.Reader
-	if body != nil {
-		b, err := json.Marshal(body)
-		if err != nil {
-			return nil, err
-		}
-		buf = bytes.NewReader(b)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", c.UserAgent)
-	return req, nil
-}
-
-func (c *testClient) Do(req *http.Request) (*http.Response, error) {
-	return c.httpClient.Do(req)
-}
-
-func (c *testClient) GetZoneInfo() string {
-	return "America/Los_Angeles"
-}
-
-func (c *testClient) SetLogLevel(level LogLevel) {}
-
-func (c *testClient) SetDebugMode(debug bool) {}
-
-func (c *testClient) SetLogOutput(w io.Writer) {}
-
-func (c *testClient) Companies() CompaniesService                   { return nil }
-func (c *testClient) Tickets() TicketsService                       { return nil }
-func (c *testClient) Contacts() ContactsService                     { return nil }
-func (c *testClient) TimeEntries() TimeEntriesService               { return nil }
-func (c *testClient) Resources() ResourcesService                   { return nil }
-func (c *testClient) Contracts() ContractsService                   { return nil }
-func (c *testClient) Projects() ProjectsService                     { return nil }
-func (c *testClient) Tasks() TasksService                           { return nil }
-func (c *testClient) Webhooks() WebhookService                      { return nil }
-func (c *testClient) ConfigurationItems() ConfigurationItemsService { return nil }
 
 func TestQueryWithEmptyFilter(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -347,7 +294,9 @@ func TestQueryWithEmptyFilter(t *testing.T) {
 				{"id": 2, "name": "Company 2"},
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -382,7 +331,9 @@ func TestQueryWithDateFilter(t *testing.T) {
 				{"id": 2, "name": "Company 2", "lastActivityDate": "2023-01-02T00:00:00Z"},
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			t.Errorf("Failed to encode response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -392,12 +343,4 @@ func TestQueryWithDateFilter(t *testing.T) {
 	result, err := client.QueryWithDateFilter(ctx, "Companies", "lastActivityDate", date)
 	require.NoError(t, err)
 	assert.Len(t, result, 2)
-}
-
-func parseURL(s string) *url.URL {
-	u, err := url.Parse(s)
-	if err != nil {
-		panic(err)
-	}
-	return u
 }
